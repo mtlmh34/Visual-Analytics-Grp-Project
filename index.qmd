@@ -1,5 +1,5 @@
 ---
-title: "index"
+title: "Home"
 author: "Liang Minghao"
 format: html
 editor: visual

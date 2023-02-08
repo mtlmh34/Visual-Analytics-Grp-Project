@@ -2,17 +2,16 @@ project:
   type: website
 
 website:
-  title: "Riinu's website"
+  title: "Visual Analytics Project - Hotel Data"
   navbar:
     left:
       - href: index.qmd
         text: Home
       - about.qmd
-      - penguins.qmd
 
 format:
   html:
-    theme: sketchy
+    theme: superhero
     css: styles.css
     toc: true
 
