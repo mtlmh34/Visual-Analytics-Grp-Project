@@ -1,10 +1,8 @@
 ---
-title: "Home"
+title: "Proposal"
 author: "Liang Minghao"
 format: html
 editor: visual
 ---
 
-## About This Project
-
-balblablabalbalbla
+## Quarto
