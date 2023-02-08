@@ -33,5 +33,47 @@
     "title": "About",
     "section": "",
     "text": "This site demonstrates the use of Quarto."
+  },
+  {
+    "objectID": "proposal.html",
+    "href": "proposal.html",
+    "title": "Proposal",
+    "section": "",
+    "text": "For our Visual Analytics Project, the team will be building a shiny app to model an Operations Dashboard that can be used in the Hotel Industry. The focus of the app would be to enable interactivity and visualization of data trends and metrics relevant to Hotel Operations as well as integrate data analytics and important statistical tests."
+  },
+  {
+    "objectID": "proposal.html#problem-statement",
+    "href": "proposal.html#problem-statement",
+    "title": "Proposal",
+    "section": "Problem Statement",
+    "text": "Problem Statement\nThe hotel industry has been reported to be hit strong with supply chain issues, which impacted hotel operation efficiency (American Hotel & Logging Association, 2021). While early studies on Hotel Operations productivity efficiency have centred largely on revenue performance or cost related indices using Data Envelopment Analysis (DEA), recent studies have also included hotel specific factors like location, style of management and even macro-economic factors that can impact overall efficiency of a hotel (Barros, 2005)."
+  },
+  {
+    "objectID": "proposal.html#solution",
+    "href": "proposal.html#solution",
+    "title": "Proposal",
+    "section": "Solution",
+    "text": "Solution\nIn this project, we aim to design a dashboard for hotel operators to view different operating variables to get insights related to their business. Overall, our insights and recommendations aim to improve hotel’s business efficiency. To develop prototype of our dashboard, we used external dataset to model the visualization. We expect that our project’s end-product of giving a holistic view of data will benefit hotel business management."
+  },
+  {
+    "objectID": "proposal.html#data",
+    "href": "proposal.html#data",
+    "title": "Proposal",
+    "section": "Data",
+    "text": "Data\nOur visualizations will be based on dataset extracted from Property Management System (PMS), which is composed of 40,060 lines for Resort and 79,330 lines for City. The dataset has total of 31 variables/columns, which include information on Booking, Bookings change log, Transactions, Meals, Distribution channels, Customers Profiles, Nationalities, and Market Segments."
+  },
+  {
+    "objectID": "proposal.html#methodology",
+    "href": "proposal.html#methodology",
+    "title": "Proposal",
+    "section": "Methodology",
+    "text": "Methodology\nAccording to the research in 2018 (Falk & Vieru, M.), various factors are related to hotel’s cancellation rate, such as lead time to booking, residence, seasonality, group size, and order channel. We explored these relevant factors’ distribution and focus variables through EDA methods. - EDA - Data visualization methods (which plots to use, etc…) - Packages to use"
+  },
+  {
+    "objectID": "proposal.html#storyboard",
+    "href": "proposal.html#storyboard",
+    "title": "Proposal",
+    "section": "Storyboard",
+    "text": "Storyboard\n\nMockup UI"
   }
 ]
