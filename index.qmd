@@ -1,6 +1,11 @@
 ---
 title: "Home"
-author: "Liang Minghao"
+author:
+  - Liang Minghao
+  - Christiana Lim En Hui
+  - Choi Sunham
+#date: 'Feb 08 2023'
+#date modified: '`r format(Sys.Date(), "%d. %B %Y")`'
 format: html
 editor: visual
 ---

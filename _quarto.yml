@@ -16,7 +16,7 @@ website:
 
 format:
   html:
-    theme: superhero
+    theme: flatly
     css: styles.css
     toc: true
 
