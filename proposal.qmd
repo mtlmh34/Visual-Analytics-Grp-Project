@@ -90,8 +90,8 @@ We will follow the below timeline to develop our key deliverables -- **Shiny app
 
 ## Reference
 
-Barros. (2005). *Measuring efficiency in the hotel sector. Annals of Tourism Research, 32(2), 456--477.* https://doi.org/10.1016/j.annals.2004.07.011 Falk, & Vieru, M. (2018). Modelling the cancellation
+Barros. (2005). *Measuring efficiency in the hotel sector. Annals of Tourism Research, 32(2), 456--477.* https://doi.org/10.1016/j.annals.2004.07.011 Falk, & Vieru, M. (2018).
 
-behaviour of hotel guests. *International Journal of Contemporary Hospitality Management, 30(10), 3100--3116.* https://doi.org/10.1108/IJCHM-08-2017-0509 Survey: 86% Of Hotels Say Supply Chain Issues
+Modelling the cancellation behaviour of hotel guests. *International Journal of Contemporary Hospitality Management, 30(10), 3100--3116.* https://doi.org/10.1108/IJCHM-08-2017-0509
 
-Impacting Operations \| *American Hotel & Logging Association. (n.d.).* https://www.ahla.com/news/survey-86-hotels-say-supply-chain-issues-impacting-operations
+Survey: 86% Of Hotels Say Supply Chain Issues Impacting Operations \| *American Hotel & Logging Association. (n.d.).* https://www.ahla.com/news/survey-86-hotels-say-supply-chain-issues-impacting-operations

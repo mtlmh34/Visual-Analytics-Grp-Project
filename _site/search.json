@@ -7,27 +7,6 @@
     "text": "Welcome to ISSS 608 Visual Analytics and Application Group 4’s project! Our project is about designing a dashboard for hotel operators to view different operations-impactful variables for actionable insights related to their business."
   },
   {
-    "objectID": "index.html#running-code",
-    "href": "index.html#running-code",
-    "title": "Home",
-    "section": "Running Code",
-    "text": "Running Code\nWhen you click the Render button a document will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2\n\n\nYou can add options to executable code like this\n\n\n[1] 4\n\n\nThe echo: false option disables the printing of code (only output is displayed)."
-  },
-  {
-    "objectID": "home.html",
-    "href": "home.html",
-    "title": "Home",
-    "section": "",
-    "text": "Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see https://quarto.org."
-  },
-  {
-    "objectID": "home.html#running-code",
-    "href": "home.html#running-code",
-    "title": "Home",
-    "section": "Running Code",
-    "text": "Running Code\nWhen you click the Render button a document will be generated that includes both content and the output of embedded code. You can embed code like this:\n\n1 + 1\n\n[1] 2\n\n\nYou can add options to executable code like this\n\n\n[1] 4\n\n\nThe echo: false option disables the printing of code (only output is displayed)."
-  },
-  {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About",
@@ -88,6 +67,6 @@
     "href": "proposal.html#reference",
     "title": "Proposal",
     "section": "Reference",
-    "text": "Reference\nBarros. (2005). Measuring efficiency in the hotel sector. Annals of Tourism Research, 32(2), 456–477. https://doi.org/10.1016/j.annals.2004.07.011 Falk, & Vieru, M. (2018). Modelling the cancellation\nbehaviour of hotel guests. International Journal of Contemporary Hospitality Management, 30(10), 3100–3116. https://doi.org/10.1108/IJCHM-08-2017-0509 Survey: 86% Of Hotels Say Supply Chain Issues\nImpacting Operations | American Hotel & Logging Association. (n.d.). https://www.ahla.com/news/survey-86-hotels-say-supply-chain-issues-impacting-operations"
+    "text": "Reference\nBarros. (2005). Measuring efficiency in the hotel sector. Annals of Tourism Research, 32(2), 456–477. https://doi.org/10.1016/j.annals.2004.07.011 Falk, & Vieru, M. (2018).\nModelling the cancellation behaviour of hotel guests. International Journal of Contemporary Hospitality Management, 30(10), 3100–3116. https://doi.org/10.1108/IJCHM-08-2017-0509\nSurvey: 86% Of Hotels Say Supply Chain Issues Impacting Operations | American Hotel & Logging Association. (n.d.). https://www.ahla.com/news/survey-86-hotels-say-supply-chain-issues-impacting-operations"
   }
 ]
