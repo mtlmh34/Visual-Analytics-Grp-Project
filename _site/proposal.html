@@ -119,7 +119,12 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#solution" id="toc-solution" class="nav-link" data-scroll-target="#solution">Solution</a></li>
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
   <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology">Methodology</a></li>
-  <li><a href="#storyboard" id="toc-storyboard" class="nav-link" data-scroll-target="#storyboard">Storyboard</a></li>
+  <li><a href="#storyboard" id="toc-storyboard" class="nav-link" data-scroll-target="#storyboard">Storyboard</a>
+  <ul class="collapse">
+  <li><a href="#st-page-know-your-customers-eda-visualization" id="toc-st-page-know-your-customers-eda-visualization" class="nav-link" data-scroll-target="#st-page-know-your-customers-eda-visualization">1st Page: Know Your Customers: EDA visualization</a></li>
+  <li><a href="#nd-page-know-your-business" id="toc-nd-page-know-your-business" class="nav-link" data-scroll-target="#nd-page-know-your-business">2nd Page: Know your business</a></li>
+  <li><a href="#rd-page-optimize-operations-time-series-forecasting" id="toc-rd-page-optimize-operations-time-series-forecasting" class="nav-link" data-scroll-target="#rd-page-optimize-operations-time-series-forecasting">3rd Page: Optimize operations: Time-series forecasting</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -163,27 +168,75 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="problem-statement" class="level2">
 <h2 class="anchored" data-anchor-id="problem-statement">Problem Statement</h2>
-<p>The hotel industry has been reported to be hit strong with supply chain issues, which impacted hotel operation efficiency (American Hotel &amp; Logging Association, 2021). While early studies on Hotel Operations productivity efficiency have centred largely on revenue performance or cost related indices using Data Envelopment Analysis (DEA), recent studies have also included hotel specific factors like location, style of management and even macro-economic factors that can impact overall efficiency of a hotel (Barros, 2005).</p>
+<p>The hotel industry has been reported to be hit strong with supply chain issues, which impacted hotel operation efficiency (American Hotel &amp; Logging Association, 2021). While early studies on Hotel Operations productivity efficiency have centred largely on revenue performance or cost-related indices using Data Envelopment Analysis (DEA), recent studies have also included hotel-specific factors like location, style of management and even macro-economic factors that can impact the overall efficiency of a hotel (Barros, 2005).</p>
 </section>
 <section id="solution" class="level2">
 <h2 class="anchored" data-anchor-id="solution">Solution</h2>
-<p>In this project, we aim to design a dashboard for hotel operators to view different operating variables to get insights related to their business. Overall, our insights and recommendations aim to improve hotel’s business efficiency. To develop prototype of our dashboard, we used external dataset to model the visualization. We expect that our project’s end-product of giving a holistic view of data will benefit hotel business management.</p>
+<p>In this project, we aim to design a dashboard for hotel operators to view different operations-impactful variables to get insights related to their business. Overall, our insights and recommendations aim to improve the hotel’s business efficiency. To develop a prototype of our dashboard, we used an external dataset to model the visualization. We expect that our project’s end product of giving a holistic view of data will benefit hotel business management.</p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<p>Our visualizations will be based on dataset extracted from Property Management System (PMS), which is composed of 40,060 lines for Resort and 79,330 lines for City. The dataset has total of 31 variables/columns, which include information on Booking, Bookings change log, Transactions, Meals, Distribution channels, Customers Profiles, Nationalities, and Market Segments.</p>
+<p>Our visualizations will be based on a dataset extracted from Property Management System (PMS) of two hotels which are composed of 40,060 lines for Resort and 79,330 lines for City. The dataset has a total of 31 variables/columns, which include information on Booking, Bookings change log, Transactions, Meals, Distribution channels, Customers Profiles, Nationalities, and Market Segments.</p>
 </section>
 <section id="methodology" class="level2">
 <h2 class="anchored" data-anchor-id="methodology">Methodology</h2>
-<p>According to the research in 2018 (Falk &amp; Vieru, M.), various factors are related to hotel’s cancellation rate, such as lead time to booking, residence, seasonality, group size, and order channel. We explored these relevant factors’ distribution and focus variables through EDA methods. - EDA - Data visualization methods (which plots to use, etc…) - Packages to use</p>
+<p>According to research in 2018 (Falk &amp; Vieru, M.), various factors are related to a hotel’s cancellation rate, such as lead time to booking, residence, seasonality, group size, and order channel. We will explore these relevant factors’ distribution and focus variables through various EDA methods and appropriate modelling to determine the method for optimizing operations.</p>
+<p><strong>Shiny Application</strong> will be developed to feature Exploratory Data Analysis, Statistical tests and Models that would be required to feature the Operations performance of Hotels.</p>
+<p><strong>Data visualization methods</strong> that will be considered for use include histograms, line charts, box and violin plots, correlation matrix and statistical summary tables for models. The following R packages are expected to be used to perform both the analysis and build the visualizations using shiny: <code>tidyverse</code>, <code>ggstatsplot</code>, <code>ggiraph</code>, <code>plotly</code>, and <code>patchwork</code>, along with any other packages that are compatible with shiny and suitable for use in visualizations.</p>
 </section>
 <section id="storyboard" class="level2">
 <h2 class="anchored" data-anchor-id="storyboard">Storyboard</h2>
-<ul>
-<li>Mockup UI</li>
-</ul>
+<p>We seek to develop an app composed of mainly 3 sections: Customers, Business, and Optimization (cost and resource). We first assume that the client of this app has both city and resort hotels, users can first select their business type to start the visualization. From there, users can click three different tabs to get insights.</p>
+<p>Moving forward in the app development phase, each visualization in mock-up page would adopt the most appropriate chart type.</p>
+<p>Overall Storyline:</p>
+<section id="st-page-know-your-customers-eda-visualization" class="level3">
+<h3 class="anchored" data-anchor-id="st-page-know-your-customers-eda-visualization">1st Page: Know Your Customers: EDA visualization</h3>
+<p>The first page will feature high-level visualizations that can offer insights into the demographics and profiles of hotel guests. For a stratified view, trellis layout will be considered. Some identified examples of the detailed visualizations are as follows:</p>
+<ol type="1">
+<li><p>Visualization 1 will determine the breakdown of guest nationalities and highlight the higher influx of guests. As an added layer, months over the years can be added to show the trend over the year.</p></li>
+<li><p>Visualization 2 will look at displaying the meal preferences of guests according to count/popularity and possibly according to the nationality of guests in order to prepare operations.</p></li>
+<li><p>Other visualizations of consideration include:</p>
+<ol type="a">
+<li><p>the channels and agents in which guests are making bookings for marketing operations to determine if adjustments to marketing campaigns should be made. For this visualization, a possible interactive ternary plot can be considered to display the relationship.</p></li>
+<li><p>Displaying how long guests stay on average according to guest nationality. For this, a moving line chart or bar chart will be considered. An additional consideration would be to include a timeline over the year to introduce a factor of seasonality.</p></li>
+</ol></li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pictures/page-1.png" class="img-fluid figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+</section>
+<section id="nd-page-know-your-business" class="level3">
+<h3 class="anchored" data-anchor-id="nd-page-know-your-business">2nd Page: Know your business</h3>
+<p>The second page will focus more on the business itself. This page will give insights into factors much more closely related to revenues and operation efficiencies, such as the general trend of average rate and cancellation. There are three key visualizations to answer the following questions: How does the price of rooms change over time, what is the trend of cancellation, and what are the key factors affecting cancellation rate.</p>
+<ol type="1">
+<li><p>Visualization 1 will answer the price of rooms over time. The visualization will have meal, customer type, and distribution channel as filters. We aim to apply bar charts or line graphs to show the change in trend.</p></li>
+<li><p>Visualization 2 will answer the trend of cancellation. Users can see the different percentage of cancelled, check-out, and no-show on a weekly basis through a stacked bar chart.</p></li>
+<li><p>Visualization 3 will answer how the cancellation trend changes by adjusting different factors. We chose lead time, booking changes, is repeated guest, and deposit type as factors related to cancellation.</p></li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pictures/page-2.png" class="img-fluid figure-img" style="width:80.0%"></p>
+</figure>
+</div>
+</section>
+<section id="rd-page-optimize-operations-time-series-forecasting" class="level3">
+<h3 class="anchored" data-anchor-id="rd-page-optimize-operations-time-series-forecasting">3rd Page: Optimize operations: Time-series forecasting</h3>
+<p>On the 3rd page, we will focus on time-series forecasting visualizations, which helps the management to make informed decisions about cost optimization, pricing and marketing. Hotel management can use this as an estimation for the next financial year and arrange logistics, staffing, and operation plans.</p>
+<p>There will be two types of visualization included in this page:</p>
+<ol type="1">
+<li><p>A line chart indicating the history and the forecasted weekly revenue;</p></li>
+<li><p>A bar chart showing the history and the forecasted weekly No.&nbsp;of booking. Toggles, radio buttons and drop-down lists will be used to adjust the granular level of the visualization (such as the aggregate level of time, hotel types, room types, etc).</p></li>
+</ol>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pictures/page-3.png" class="img-fluid figure-img" style="width:80.0%"></p>
+</figure>
+</div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
