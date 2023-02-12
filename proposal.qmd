@@ -12,7 +12,7 @@ editor: visual
 
 ## Overview
 
-For our Visual Analytics Project, the team will be building a shiny app to model an Operations Dashboard that can be used in the Hotel Industry. The focus of the app would be to enable interactivity and visualization of data trends and metrics relevant to Hotel Operations as well as integrate data analytics and important statistical tests.
+For our Visual Analytics Project, the team will be building a shiny app to model an **Operations Dashboard** that can be used in the **Hotel Industry**. The focus of the app would be to enable interactivity and visualization of data trends and metrics relevant to Hotel Operations as well as integrate data analytics and important statistical tests.
 
 ## Problem Statement
 
@@ -80,6 +80,18 @@ There will be two types of visualization included in this page:
 
 2.  A bar chart showing the history and the forecasted weekly No. of booking. Toggles, radio buttons and drop-down lists will be used to adjust the granular level of the visualization (such as the aggregate level of time, hotel types, room types, etc).
 
-
 ![](pictures/page-3.png){fig-align="center" width="80%"}
 
+## Project Timeline
+
+We will follow the below timeline to develop our key deliverables -- **Shiny app**, **website**, **user guide**, and **poster**. Regular meetings after the class as well as additional ad-hoc meetings will be done accordingly.
+
+![](pictures/timeline.png){fig-align="center" width="90%"}
+
+## Reference
+
+Barros. (2005). *Measuring efficiency in the hotel sector. Annals of Tourism Research, 32(2), 456--477.* https://doi.org/10.1016/j.annals.2004.07.011 Falk, & Vieru, M. (2018). Modelling the cancellation
+
+behaviour of hotel guests. *International Journal of Contemporary Hospitality Management, 30(10), 3100--3116.* https://doi.org/10.1108/IJCHM-08-2017-0509 Survey: 86% Of Hotels Say Supply Chain Issues
+
+Impacting Operations \| *American Hotel & Logging Association. (n.d.).* https://www.ahla.com/news/survey-86-hotels-say-supply-chain-issues-impacting-operations
