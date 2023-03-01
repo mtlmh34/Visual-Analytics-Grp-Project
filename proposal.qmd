@@ -1,5 +1,5 @@
 ---
-title: "Proposal"
+title: "Methodology"
 author:
   - Liang Minghao
   - Christiana Lim En Hui

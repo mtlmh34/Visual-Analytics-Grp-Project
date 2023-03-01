@@ -8,9 +8,11 @@ website:
       - href: index.qmd
         text: Home
       - href: proposal.qmd
-        text: Proposal
-      - text: User Guide
-      - text: Shiny App
+        text: Methodology
+      - href: user_guide.qmd
+        text: User Guide
+      - href: https://hotel-viz.shinyapps.io/hotel_viz/
+        text: Shiny App
       - href: about.qmd
         text: About Us
 

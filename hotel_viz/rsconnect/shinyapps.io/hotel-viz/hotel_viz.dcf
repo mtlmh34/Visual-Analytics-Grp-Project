@@ -1,0 +1,13 @@
+name: hotel_viz
+title: hotel_viz
+username:
+account: hotel-viz
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8445596
+bundleId: 6902321
+url: https://hotel-viz.shinyapps.io/hotel_viz/
+when: 1677679302.72582
+lastSyncTime: 1677679302.72585
+asMultiple: FALSE
+asStatic: FALSE
