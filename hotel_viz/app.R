@@ -11,8 +11,8 @@ library(shiny)
 library(shinythemes)
 library(tidyverse)
 
-city_data <- read.csv('/Users/minghaooo/mtlmh34/Visual-Analytics-Grp-Project/data/City.csv')
-resort_data <- read.csv('/Users/minghaooo/mtlmh34/Visual-Analytics-Grp-Project/data/resort.csv')
+city_data <- read.csv('data/City.csv')
+resort_data <- read.csv('data/Resort.csv')
 
 
 
@@ -21,7 +21,7 @@ resort_data <- read.csv('/Users/minghaooo/mtlmh34/Visual-Analytics-Grp-Project/d
 ui <- navbarPage(
   title = "Hotel Data Analytical Dashboard",
   fluid = TRUE,
-  theme=shinytheme("simplex"),
+  theme='simplex',
   id = "navbarID",
   
   tabPanel("User Guide",
