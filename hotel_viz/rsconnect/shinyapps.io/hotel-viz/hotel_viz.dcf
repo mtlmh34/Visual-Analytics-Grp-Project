@@ -5,9 +5,9 @@ account: hotel-viz
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8445596
-bundleId: 6974402
+bundleId: 6974472
 url: https://hotel-viz.shinyapps.io/hotel_viz/
-when: 1679113424.29019
-lastSyncTime: 1679113424.29022
+when: 1679116088.13464
+lastSyncTime: 1679116088.13465
 asMultiple: FALSE
 asStatic: FALSE
