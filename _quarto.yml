@@ -8,7 +8,7 @@ website:
       - href: index.qmd
         text: Home
       - href: proposal.qmd
-        text: Methodology
+        text: Overview
       - href: user_guide.qmd
         text: User Guide
       - href: https://hotel-viz.shinyapps.io/hotel_viz/
