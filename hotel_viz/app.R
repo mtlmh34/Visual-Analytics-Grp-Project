@@ -1,19 +1,12 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+
+### --------- Getting Started ---------
 
 pacman::p_load(shiny, shinythemes, tidyverse, rpart,rpart.plot, shinyWidgets)
-
 set.seed(123)
-
 
 # loading data
 hotel_data <- read.csv('data/hotel.csv')
+#hotel_data <- hotel_data %>% select(-Country,-Agent,-Company)
 
 # split train and test
 data_size=nrow(hotel_data)
@@ -24,11 +17,49 @@ train_df <- hotel_data %>%
 test_df <- hotel_data %>%
   filter(!(row_number() %in% index))
 
-var_list <- colnames(hotel_data)[3:33]
-var_list_default <- var_list[1:3]
+# for decision tree
+var_list <- list(
+  "No. of Non-Canceled Previous Bookings"="PreviousBookingsNotCanceled", 
+  "No. of Previous Cancallations"="PreviousCancellations",  
+  "No. of Special Requests"="TotalOfSpecialRequests",
+  "No. of Changes Made"="BookingChanges",  
+  "Hotel Type"="hotelType",    
+  "Customer Type"="CustomerType", 
+  "Deposit Type"="DepositType",   
+  "Lead Time"="LeadTime",                   
+  "Market Segment"="MarketSegment",   
+  "Distribution Channel"="DistributionChannel", 
+  "Reserved Room Type"="ReservedRoomType", 
+  "Assigned Room Type"="AssignedRoomType",
+  "Avg. Daily Rate"="ADR",
+  "No. of Adults"="Adults",
+  "No. of Babies"="Babies",
+  "No. of Children"="Children",
+  "No. of Days in Waiting List"="DaysInWaitingList",          
+  "Is Repeated Guest?"="IsRepeatedGuest",             
+  "Required CarParking Spaces?"="RequiredCarParkingSpaces"
+)
+var_list_default <- var_list[1:9]
 
+# for linear regression
+lr_var_list <- list(
+  "No. of Non-Canceled Previous Bookings"="PreviousBookingsNotCanceled", 
+  "No. of Previous Cancallations"="PreviousCancellations",  
+  "No. of Special Requests"="TotalOfSpecialRequests",
+  "No. of Changes Made"="BookingChanges",  
+  "Avg. Daily Rate"="ADR",
+  "Lead Time"="LeadTime", 
+  "No. of weekend days stayed"="StaysInWeekendNights", 
+  "No. of week days stayed"="StaysInWeekNights",
+  "No. of Adults"="Adults",
+  "No. of Babies"="Babies",
+  "No. of Children"="Children",
+  "No. of Days in Waiting List"="DaysInWaitingList",          
+  "Is Repeated Guest?"="IsRepeatedGuest",             
+  "Required CarParking Spaces?"="RequiredCarParkingSpaces"
+)
 
-### --------- functions
+### --------- functions --------
 makeTree = function(model_vars, min_split, min_bucket, max_depth) {
   # Takes a list of model variables (strings), a minimum split parameter
   # (int), a minimum bucket size parameter (int), and a maximum tree depth
@@ -43,7 +74,7 @@ makeTree = function(model_vars, min_split, min_bucket, max_depth) {
     as.formula(f),
     method = "class",  # sets it up as a classification problem
     data = train_dat,
-    parms = list(split = "gini"),  # ensures rpart uses gini indexes
+    parms = list(prior = c(.5,.5), split = "information"),  # ensures rpart uses gini indexes
     minsplit = min_split,
     minbucket = min_bucket,
     maxdepth = max_depth,
@@ -68,21 +99,23 @@ useTree = function(tree,df) {
 
 # Evaluation
 calcScores = function(results) {
-  # Takes a results dataframe as input and then calculates scores for
-  # accuracy, true negative rate, and true positive rate. It returns a
-  # list of formatted strings detailing these results.
   
   results = table(results)
   
-  accuracy <- (sum(diag(results)) / sum(results))*100
-  precision <- (diag(results) / colSums(results))
-  recall <- (diag(results) / rowSums(results))
+  # Calculate accuracy
+  accuracy <- round((results[1,1]+results[2,2])/sum(results),3)*100
+  
+  # Calculate precision
+  precision <- round(results[2,2]/sum(results[,2]),3)*100
+  
+  # Calculate recall
+  recall <- round(results[2,2]/sum(results[2,]),3)*100
   
   # the collapse argument removes the spacing which would otherwise be there
   return(list(
-    paste(c("Overall Accuracy: ",   round(accuracy), "%"), collapse = ""),
-    paste(c("Precision: ", round(precision), "%"), collapse = ""),
-    paste(c("Recall: ", round(recall), "%"), collapse = "")
+    paste(c("Overall Accuracy: ",   accuracy, "%"), collapse = ""),
+    paste(c("Precision: ", precision, "%"), collapse = ""),
+    paste(c("Recall: ", recall, "%"), collapse = "")
   ))
 }
 
@@ -92,8 +125,8 @@ resultsTable = function(results) {
   data = table(results)
   Outcomes = c("Predicted Not Cancelled", "Predicted Cancelled", "Total")
   # reconstruct the columns of R's table(...) CLI display
-  c1 = c(data[, 1], sum(data[, 1]))  # data[, 1] is a length 2 vector
-  c2 = c(data[, 2], sum(data[, 1]))  # data[, 2] is a length 2 vector
+  c1 = c(data[, 1], sum(data[, 1]))  #TN, FN, Sum(TN, FN)
+  c2 = c(data[, 2], sum(data[, 2]))  #FP, TP, Sum(TP, FP)
   c3 = c(sum(data[, 1]), sum(data[2, ]), sum(data))
   
   # turn these columns back into a dataframe but with proper headers
@@ -105,6 +138,47 @@ resultsTable = function(results) {
   return(output)
 }
 
+corrplot_num = function(df){
+  df <- na.omit(df)
+  numeric_var <- names(df)[sapply(df[names(df)], is.numeric)]
+  num_df <- df[, numeric_var]
+  
+  # calculate the correlation matrix
+  corr_mat <- cor(num_df)
+  
+  # Create correlation heatmap with plotly
+  p <- plot_ly(z = corr_mat, type = "heatmap", colorscale = "RdBu", reversescale = TRUE,
+          x = colnames(corr_mat), y = colnames(corr_mat)) %>%
+    layout(title = "Correlation Heatmap of Numerical Variables",
+           xaxis = list(tickangle = 30),
+           yaxis = list(showticklabels = FALSE))
+  
+  return(p)
+}
+
+corrplot_cat = function(df){
+  df <- na.omit(df)
+  cat_var <- c(names(df)[sapply(df[names(df)], !is.numeric)], "isCanceled")
+  cat_df <- df[, c(cat_var, "isCanceled")]
+  
+  # calculate the correlation matrix
+  corr_mat <- cor(cat_df)
+  
+  # Create correlation heatmap with plotly
+  p <- plot_ly(z = corr_mat, type = "heatmap", colorscale = "RdBu", reversescale = TRUE,
+               x = colnames(corr_mat), y = colnames(corr_mat)) %>%
+    layout(title = "Correlation Heatmap of Numerical Variables",
+           xaxis = list(tickangle = 30),
+           yaxis = list(showticklabels = FALSE))
+  
+  return(p)
+}
+
+makelr = function(model_vars){
+  train_dat = train_df
+  # create an rpart compatible formula for the model from the chosen vars
+  f = paste("IsCanceled ~ ", paste(model_vars, collapse = " + "))
+}
 
 # ------- Shiny UI --------
 
@@ -113,178 +187,179 @@ ui <- navbarPage(
   fluid = TRUE,
   theme='simplex',
   id = "navbarID",
-  
   tabPanel("User Guide",
            icon = icon('person-chalkboard'),
            h1("Welcome to our App!"),
            mainPanel(
              tags$a(href="https://github.com/mtlmh34/Visual-Analytics-Grp-Project/blob/main/README.md", "Click Here for user guide!")
-             )
-           ),
+           )
+  ),
   
   ######### Page 1
   navbarMenu("Know Your Business", 
              icon = icon('briefcase'),
              tabPanel("Rates",
-                      ),
+             ),
              tabPanel("Cancellations",
-                      ),
+             ),
              tabPanel("Revenue",
-                      )
+             )
   ),
   
   ######### Page 2
-  navbarMenu("Know Your Customers",
-             icon = icon('address-card'),
-             tabPanel("Demographics",
-                      ),
-             tabPanel("Preference",
-             )
+  navbarMenu(
+    "Know Your Customers",
+    icon = icon('address-card'),
+    tabPanel(
+      "Demographics",
+    ),
+    tabPanel(
+      "Preference",
+    )
   ),
-
+  
   ######### Page 3
-  navbarMenu("Predictive Analysis", 
-             icon = icon("chart-line"),
-             tabPanel("Predict For Cancellation: Decision Tree",
-                      sidebarLayout(
-                        sidebarPanel(
-                          h2("The Controls"),
-                          br(),
-            
-                          actionButton(
-                            inputId = "createModel",
-                            label = "Create Model",
-                            class = "btn-primary"  # makes it blue!
-                          ),
-                          actionButton(
-                            inputId = "testModel",
-                            label = "Test Model",
-                            class = "btn-danger"  # makes it red!
-                          ),
-                          
-                          br(),
-                          
-                          h3("Model Features"),
-                          helpText(
-                            'tryna tune it.......'
-                          ),
-                          pickerInput(
-                            inputId = "model_vars",
-                            label = NULL,  # label given in outer code
-                            choices = var_list,
-                            selected = var_list_default,
-                            options = list(`actions-box` = TRUE),
-                            multiple = TRUE
-                          ),
-                          
-                          br(),
-                          
-                          h3("Decision Tree"),
-                          helpText(
-                            "some text..."
-                          ),
-                          br(),
-                          h4("Minimum Split"),
-                          helpText(
-                            "If at a given node N is below this value, that node cannot",
-                            "be split any further: it is a terminal node of the tree."
-                          ),
-                          sliderInput(
-                            inputId = "min_split",
-                            label = NULL,  # label given in outer code
-                            min = 2,       # two is the smallest that could be split
-                            max = 10,      # chosen to not make the models too wild
-                            value = 2      # defaults to not having an artifical minimum
-                          ),
-                          
-                          br(),
-                          
-                          h4("Minimum Bucket Size"),
-                          helpText(
-                            "If creating a given split would cause N₁ or N₂ to fall below",
-                            "this minimum, then that split isn't made part of the",
-                            "decision tree."
-                          ),
-                          sliderInput(
-                            inputId = "min_bucket",
-                            label = NULL,  # label given in outer code
-                            min = 1,       # can't have buckets of size zero
-                            max = 30,      # rpart default is minbucket = 3*minsplit
-                            value = 1     # defaults to not having an artifical minimum
-                          ),
-                          br(),
-                          h4("Maximum Tree Depth"),
-                          helpText(
-                            "Control the maximum depth that the decision tree can reach.",
-                            "Note that, depending on what features are being used and the",
-                            "values of the other parameters, you may end up with a tree",
-                            "much shallower than the maximum."
-                          ),
-                          sliderInput(
-                            inputId = "max_depth",
-                            label = NULL,  # label given in outer code
-                            min = 2,       # a min of 2 allows for at least one split
-                            max = 30,      # rpart can't do 31+ depth on 32-bit machines
-                            value = 5      # chosen to not make the default too wild
-                          )
-                        )
-                        ,
-                        mainPanel(
-                          fluidRow(
-                            label = NULL,
-                            column(6,
-                                   h2("Training Results"),
-                                   helpText(
-                                     ""
-                                   ),
-                                   # training accuracy, true positive, and true negative
-                                   tagAppendAttributes(
-                                     textOutput("training_scores"),
-                                     # allow linebreaks between scores, larger font here
-                                     style = "white-space: pre-wrap; font-size: 17px;"
-                                   ),
-                                   br(),
-                                   # training results table matches layout from presentation
-                                   tableOutput("training_table")
-                            ), # column
-                            column(6,
-                                   h2("Test Results"),
-                                   helpText(
-                                     ""
-                                   ), 
-                                   # test accuracy, true positive, and true negative
-                                   tagAppendAttributes(
-                                     textOutput("test_scores"),
-                                     # allow linebreaks between scores, larger font here
-                                     style = "white-space: pre-wrap; font-size: 17px;"
-                                   ),
-                                   br(),
-                                   # training results table matches layout from presentation
-                                   tableOutput("test_table")
-                            ) # column
-                          ), # fluidRow
-                          h2("Decision Tree"),
-                          helpText(
-                            "This is a graphical depiction of the decision tree, the model"
-                          ),
-                          plotOutput(outputId = "tree_plot"),
-                          br(),
-                          
-                        ) # MainPanel
-                      ) # SidebarLayout
-                ), # tabPanel
-             tabPanel("Predict For Cancellation: Logistic Regression")
-             
+  navbarMenu(
+    "Predictive Analysis",
+    icon = icon("chart-line"),
+    tabPanel(
+      "Decision Tree: Cancellation Prediction",
+      sidebarLayout(
+        sidebarPanel(
+          h3("The Controls"),
+          br(),
+          
+          actionBttn(
+            inputId = "createTreeModel",
+            label = "Create Tree",
+            class = "primary"  # makes it blue!
+          ),
+          actionBttn(
+            inputId = "testTreeModel",
+            label = "Test Tree",
+            color = "danger"  # makes it red!
+          ),
+          
+          br(),
+          
+          h3("Model Features"),
+          helpText(
+            'Here are the choices of the predictors to choose:'
+          ),
+          pickerInput(
+            inputId = "model_vars",
+            label = NULL,  # label given in outer code
+            choices = var_list,
+            selected = var_list_default,
+            options = list(`actions-box` = TRUE),
+            multiple = TRUE
+          ),
+          
+          br(),
+          "Here are some hyperparameters for tuning the DT: ",
+          
+          h4("Minimum Split"),
+          helpText(
+            "Control the minimum size allowed for the node to split further"
+          ),
+          sliderInput(
+            inputId = "min_split",
+            label = NULL,  # label given in outer code
+            min = 500,       # two is the smallest that could be split
+            max = 10000,      # chosen to not make the models too wild
+            value = 1000,      # defaults to not having an artifical minimum,
+            step=500
+          ),
+          
+          br(),
+          
+          h4("Minimum Bucket Size"),
+          helpText(
+            "Control the minimum size allowed in the terminal node"
+          ),
+          sliderInput(
+            inputId = "min_bucket",
+            label = NULL,  # label given in outer code
+            min = 100,       # can't have buckets of size zero
+            max = 3000,      # rpart default is minbucket = 3*minsplit
+            value = 500,     # defaults to not having an artifical minimum
+            step = 100
+          ),
+          br(),
+          h4("Maximum Tree Depth"),
+          helpText(
+            "Control the maximum depth that the decision tree can reach"
+          ),
+          sliderInput(
+            inputId = "max_depth",
+            label = NULL,  # label given in outer code
+            min = 2,       # a min of 2 allows for at least one split
+            max = 15,      # rpart can't do 31+ depth on 32-bit machines
+            value = 5      # chosen to not make the default too wild
           )
-)
-                                       
+        ), #SidebarPanel
+        mainPanel(
+          fluidRow(
+            label = NULL,
+            column(6,
+                   h3("Training Results"),
+                   br(),
+                   # training accuracy, true positive, and true negative
+                   tagAppendAttributes(
+                     textOutput("tree_training_scores"),
+                     # allow linebreaks between scores, larger font here
+                     style = "white-space: pre-wrap; font-size: 17px;"
+                   ), 
+                   # training results table matches layout from presentation
+                   tableOutput("tree_training_table")
+            ), # column 1
+            column(6,
+                   h3("Test Results"),
+                   br(),
+                   # test accuracy, true positive, and true negative
+                   tagAppendAttributes(
+                     textOutput("tree_test_scores"),
+                     # allow linebreaks between scores, larger font here
+                     style = "white-space: pre-wrap; font-size: 17px;"
+                   ),
+                   # training results table matches layout from presentation
+                   tableOutput("tree_test_table")
+            ) # column 2
+          ), # fluidRow
+          fluidRow(
+            column(8,
+                   h3("Decision Tree"),
+                   helpText(
+                     "Class 0: Predicted not Canceled; Class 1: Predicted Canceled"
+                   ),
+                   plotOutput(outputId = "tree_plot")
+            ), #column 1
+            column(4,
+                   h3("Classification"),
+                   "- The tree graph on the left dicpicts the suggested method by a trained decision tree model,
+                                   which classfies whether a customer is likely to cancelled the order. "
+                   ,
+                   br(),br(),
+                   "- The accuracy of the model can be referred by the training and testing accuracy on the top.",
+                   br(),br(),
+                   "- Operation team can utilise this model as a guide and pay extra attentions to the customer who are likely to churn."
+            ) # column 2
+          ) #FluidRow
+        )#mainPanel
+      )#SidebarLayout
+    )#tabPanel 1
+  )
+)#NavbarPage
+
+
 
 # ------- server --------
 server <- function(input, output) {
-  # INPUT EVENT REACTIONS
+  #------ INPUT EVENT REACTIONS -----
+  #------ Decision Tree --------
   # reconstruct the tree every time createModel is pressed
   tree = eventReactive(
-    eventExpr = input$createModel,
+    eventExpr = input$createTreeModel,
     valueExpr = makeTree(
       model_vars = input$model_vars,
       input$min_split, input$min_bucket, input$max_depth
@@ -292,40 +367,39 @@ server <- function(input, output) {
   )
   
   # regenerate training results every time createModel is pressed
-  training_results = eventReactive(
-    eventExpr = input$createModel,
+  tree_training_results = eventReactive(
+    eventExpr = input$createTreeModel,
     valueExpr = useTree(tree(), train_df)
   )
   
   # regenerate test results every time createModel is pressed
-  test_results = eventReactive(
-    eventExpr = input$testModel,
+  tree_test_results = eventReactive(
+    eventExpr = input$testTreeModel,
     valueExpr = useTree(tree(), test_df)
   )
   
-  # OUTPUT DISPLAY PREP
+  #------ OUTPUT DISPLAY PREP ------
   # assessment scores are each collapsed to display on a new line
-  output$training_scores = renderText(
-    paste(calcScores(training_results()), collapse = "\n")
+  output$tree_training_scores = renderText(
+    paste(calcScores(tree_training_results()), collapse = "\n")
   )
-  output$test_scores = renderText(
-    paste(calcScores(test_results()), collapse = "\n")
+  output$tree_test_scores = renderText(
+    paste(calcScores(tree_test_results()), collapse = "\n")
   )
   
   # tables of outcome breakdows are static widgets
-  output$training_table = renderTable(
-    resultsTable(training_results()),
+  output$tree_training_table = renderTable(
+    resultsTable(tree_training_results()),
     align = "lccc",  # left-align first column, centre rest
     striped = TRUE
   )
-  output$test_table = renderTable(
-    resultsTable(test_results()),
+  output$tree_test_table = renderTable(
+    resultsTable(tree_test_results()),
     align = "lccc",  # left-align first column, centre rest
     striped = TRUE
   )
   # frame for a plot of the decision tree
   output$tree_plot = renderPlot(
-    # prp takes an output from rpart and plots it (literally Plot RPart)
     prp(
       tree(), roundint = FALSE,
       # neaten up the nodes and edges, remove detailed labels
@@ -333,6 +407,13 @@ server <- function(input, output) {
       # colours spam terminals in red, non-spam terminals in blue
       box.col = c("cornflowerblue", "tomato")[tree()$frame$yval]
     )
+  )
+  #correlation heatmap
+  output$num_corr_plot = renderPlotly(
+    plot1 <- corrplot_num(hotel_data)
+  )
+  output$cat_corr_plot = renderPlotly(
+    plot1 <- corrplot_cat(hotel_data)
   )
 }
 
