@@ -1,7 +1,8 @@
 
 ### --------- Getting Started ---------
 
-pacman::p_load(shiny, shinythemes, tidyverse, rpart,rpart.plot, shinyWidgets, plotly)
+pacman::p_load(shiny, shinythemes, tidyverse, rpart, 
+               rpart.plot, shinyWidgets, plotly, caret, tibble)
 set.seed(123)
 
 # loading data
@@ -202,6 +203,27 @@ useLR = function(model, df) {
   return(results)
 }
 
+var_imp_plot = function(varImp){
+  
+  # calculate variable importance
+  varImp <- varImp %>% 
+    arrange(desc(Overall)) %>%
+    rownames_to_column(var = "Variable") %>%
+    slice_head(n = 10)  %>%
+    mutate(Variable = str_trim(Variable))
+  
+  print(varImp)
+  
+  # create a bar chart of the variable importance measures
+  p <- plot_ly(data = varImp, y = ~Variable, x = ~Overall, type = "bar", color = "#eab676") %>%
+    layout(title = "Variable Importance Measures",
+           yaxis = list(
+             title = "Predictor Variable",
+             categoryorder = "total ascending"),
+           xaxis = list(title = "Importance")
+    )
+  return(p)
+}
 
 # ------- Shiny UI --------
 
@@ -440,7 +462,8 @@ ui <- navbarPage(
            ) # column 2
          ), # fluidRow
          fluidRow(
-           "Importance of Variables"
+           h3("Importance of Variables"),
+           plotlyOutput("lr_var_importance_bar")
          )
        )#MainPanel
      )#SidebarLayout
@@ -493,6 +516,11 @@ server <- function(input, output) {
     valueExpr = useLR(lr(), test_df)
   )
   
+  lr_var_importance = eventReactive(
+    eventExpr = input$createLRModel,
+    valueExpr = varImp(lr(), scale = FALSE)
+  )
+  
   #------ OUTPUT DISPLAY PREP ------
   # assessment scores are each collapsed to display on a new line
   output$tree_training_scores = renderText(
@@ -525,7 +553,7 @@ server <- function(input, output) {
   )
   #correlation heatmap
   output$num_corr_plot = renderPlotly(
-    plot1 <- corrplot_num(hotel_data)
+    corrplot_num(hotel_data)
   )
   
   output$lr_training_scores = renderText(
@@ -546,7 +574,10 @@ server <- function(input, output) {
     align = "lccc",  # left-align first column, centre rest
     striped = TRUE
   )
-
+  
+  output$lr_var_importance_bar = renderPlotly(
+    var_imp_plot(lr_var_importance())
+  )
 }
 
 
