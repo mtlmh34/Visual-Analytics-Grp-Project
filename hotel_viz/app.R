@@ -10,11 +10,11 @@ pacman:: p_load(shiny, shinythemes, shinyWidgets,
                 tidyverse, gt, gtsummary, 
                 parallelPlot, ggplot2, plotly, 
                 ggalluvial, gmodels, readxl, DT, ggstatsplot, 
-                rpart, rpart.plot, caret, tibble)
+                rpart, rpart.plot, caret, tibble, PMCMRplus)
 set.seed(123)
 
 # loading data
-hotel_data <- read_excel('data/hotel_data_merged.xlsx')
+hotel_data <- read.csv('data/hotel.csv')
 
 hotel_data <- hotel_data %>% 
   mutate(Meal = str_trim(Meal)) %>% 
@@ -23,7 +23,7 @@ hotel_data <- hotel_data %>%
 
 # split train and test
 data_size=nrow(hotel_data)
-index <- sample(1:data_size, size = trunc(.8 * data_size))
+index <- sample(1:data_size, size = 10000)
 train_df <- hotel_data %>%
   filter(row_number() %in% index)
 
@@ -36,11 +36,10 @@ var_list <- list(
   "No. of Previous Cancallations"="PreviousCancellations",  
   "No. of Special Requests"="TotalOfSpecialRequests",
   "No. of Changes Made"="BookingChanges",  
-  "Hotel Type"="HotelType",    
+  "Hotel Type"="hotelType",    
   "Customer Type"="CustomerType", 
   "Deposit Type"="DepositType",   
   "Lead Time"="LeadTime",                   
-  "Market Segment"="MarketSegment",   
   "Distribution Channel"="DistributionChannel", 
   "Reserved Room Type"="ReservedRoomType", 
   "Assigned Room Type"="AssignedRoomType",
@@ -60,11 +59,10 @@ lr_var_list <- list(
   "No. of Previous Cancallations"="PreviousCancellations",  
   "No. of Special Requests"="TotalOfSpecialRequests",
   "No. of Changes Made"="BookingChanges",  
-  "Hotel Type"="HotelType",    
+  "Hotel Type"="hotelType",    
   "Customer Type"="CustomerType", 
   "Deposit Type"="DepositType",   
   "Lead Time"="LeadTime",                   
-  "Market Segment"="MarketSegment",   
   "Distribution Channel"="DistributionChannel", 
   "Reserved Room Type"="ReservedRoomType", 
   "Assigned Room Type"="AssignedRoomType",
@@ -102,8 +100,7 @@ makeTree = function(model_vars, min_split, min_bucket, max_depth) {
     maxdepth = max_depth,
     cp = 0  # complexity parameter, at zero prevents pruning on branches
   )
-  
-  print("tree trained")
+
   return(tree)
 }
 
@@ -118,7 +115,6 @@ useTree = function(tree,df) {
   results = as.data.frame(prediction)
   results$truth = data$IsCanceled
   
-  print("prediction completed")
   return(results)
 }
 
@@ -179,7 +175,6 @@ corrplot_num = function(df){
            xaxis = list(tickangle = 30),
            yaxis = list(showticklabels = FALSE))
   
-  print("correlations plotted")
   return(p)
 }
 
@@ -190,10 +185,9 @@ makeLR = function(model_vars){
   data[data==""]<-NA
   data[data=="NULL"]<-NA
   
-  data$HotelType=as.factor(data$HotelType)  
+  data$hotelType=as.factor(data$hotelType)  
   data$ArrivalDateMonth=as.factor(data$ArrivalDateMonth)  
-  data$Meal=as.factor(data$Meal)  
-  data$MarketSegment=as.factor(data$MarketSegment)  
+  data$Meal=as.factor(data$Meal)
   data$DistributionChannel=as.factor(data$DistributionChannel)  
   data$ReservedRoomType=as.factor(data$ReservedRoomType)  
   data$AssignedRoomType=as.factor(data$AssignedRoomType)  
@@ -205,7 +199,6 @@ makeLR = function(model_vars){
   
   lr_model=glm(as.formula(f),data=data,family=binomial(link="logit"))
   
-  print("logistic regression trained")
   return(lr_model)
 }
 
@@ -220,7 +213,6 @@ useLR = function(model, df) {
   results = as.data.frame(prediction)
   results$truth = data$IsCanceled
 
-  print("logistic regression predicted")
   return(results)
 }
 
@@ -244,7 +236,6 @@ var_imp_plot = function(varImp){
            xaxis = list(title = "Importance")
     )
   
-  print("Importance of variables plotted")
   return(p)
 }
 
@@ -289,7 +280,7 @@ ui <- navbarPage(
           br(),
           
           selectInput("hotel_type", "Select Hotel:",
-                      choices = c("All", unique(hotel_data$HotelType))),
+                      choices = c("All", unique(hotel_data$hotelType))),
           # Meal, customer, distribution channel filter
           selectInput("meal", "Meal", choices = c("All", unique(hotel_data$Meal))),
           selectInput("customer_type", "Customer Type", choices = c("All", unique(hotel_data$CustomerType))),
@@ -303,7 +294,7 @@ ui <- navbarPage(
           selectInput(inputId = "x",
                       label = "Predictor variable:",
                       choices = c("Customer Type" = "CustomerType",
-                                  "Hotel Type" = "HotelType",
+                                  "Hotel Type" = "hotelType",
                                   "Deposit Status" = "DepositType")),
           # insert select for test type 
           radioButtons("y", "Anova Test Type:",
@@ -332,8 +323,8 @@ ui <- navbarPage(
       sidebarLayout(
         sidebarPanel(
           
-          selectInput("HotelType", "Select Hotel:",
-                      choices = c("All", unique(hotel_data$HotelType))),
+          selectInput("hotelType", "Select Hotel:",
+                      choices = c("All", unique(hotel_data$hotelType))),
           
           # Lead time range filter
           sliderInput("LeadTime", "Lead Time Range (Days)", 
@@ -415,10 +406,10 @@ ui <- navbarPage(
           sliderInput(
             inputId = "min_split",
             label = NULL,  # label given in outer code
-            min = 500,       # two is the smallest that could be split
-            max = 10000,      # chosen to not make the models too wild
-            value = 1000,      # defaults to not having an artifical minimum,
-            step=500
+            min = 50,       # two is the smallest that could be split
+            max = 1000,      # chosen to not make the models too wild
+            value = 100,      # defaults to not having an artifical minimum,
+            step=50
           ),
           
           br(),
@@ -430,10 +421,10 @@ ui <- navbarPage(
           sliderInput(
             inputId = "min_bucket",
             label = NULL,  # label given in outer code
-            min = 100,       # can't have buckets of size zero
-            max = 3000,      # rpart default is minbucket = 3*minsplit
-            value = 500,     # defaults to not having an artifical minimum
-            step = 100
+            min = 10,       # can't have buckets of size zero
+            max = 300,      # rpart default is minbucket = 3*minsplit
+            value = 50,     # defaults to not having an artifical minimum
+            step = 10
           ),
           br(),
           h4("Maximum Tree Depth"),
@@ -453,6 +444,7 @@ ui <- navbarPage(
             label = NULL,
             column(6,
                    h3("Training Results"),
+                   helpText("training size is limited due to server memory capacity"),
                    br(),
                    # training accuracy, precision, recall
                    tagAppendAttributes(
@@ -544,6 +536,7 @@ ui <- navbarPage(
            label = NULL,
            column(6,
                   h3("Training Results"),
+                  helpText("training size is limited due to server memory capacity"),
                   br(),
                   # training accuracy, precision, recall
                   tagAppendAttributes(
@@ -589,7 +582,7 @@ server <- function(input, output) {
   
   filter_data_1 <- reactive({
     hotel_data %>% 
-      filter(if (input$hotel_type == "All") TRUE else HotelType == input$hotel_type) %>%
+      filter(if (input$hotel_type == "All") TRUE else hotelType == input$hotel_type) %>%
       filter(if (input$meal == "All") TRUE else Meal == input$meal) %>%
       filter(if (input$customer_type == "All") TRUE else CustomerType == input$customer_type) %>%
       filter(if (input$distribution_channel == "All") TRUE else DistributionChannel == input$distribution_channel) %>%
@@ -776,7 +769,7 @@ server <- function(input, output) {
   
   filter_data_1 <- reactive({
     hotel_data %>% 
-      filter(if (input$hotel_type == "All") TRUE else HotelType == input$hotel_type) %>%
+      filter(if (input$hotel_type == "All") TRUE else hotelType == input$hotel_type) %>%
       filter(if (input$meal == "All") TRUE else Meal == input$meal) %>%
       filter(if (input$customer_type == "All") TRUE else CustomerType == input$customer_type) %>%
       filter(if (input$distribution_channel == "All") TRUE else DistributionChannel == input$distribution_channel) %>%
@@ -819,8 +812,6 @@ server <- function(input, output) {
       scale_color_discrete(name = "Year") +
       labs(x = "Month", y = "Average Daily Rate") +
       ggtitle("Average Daily Rate by Month and Year")
-    
-    print("ADR plot")
   }) 
   
   
@@ -836,8 +827,6 @@ server <- function(input, output) {
       ylab("Cancellation Rate") +
       scale_fill_discrete(name = "Year and Month") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1))
-    
-    print("Cancellation plot")
   })
   
   
@@ -856,8 +845,6 @@ server <- function(input, output) {
         limits = c(0, 1000),
         breaks = seq(from = 0, to = 1000, by = 50)
       )
-    
-    print("ANOVA plot")
   }) # AnovaPlot
   
   
