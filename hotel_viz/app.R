@@ -14,10 +14,12 @@ pacman:: p_load(shiny, shinythemes, shinyWidgets,
 set.seed(123)
 
 # loading data
-hotel_data <- read.csv('data/hotel.csv')
+hotel_data <- read_excel('data/hotel_data_merged.xlsx')
+
 hotel_data <- hotel_data %>% 
   mutate(Meal = str_trim(Meal)) %>% 
-  select(-Country,-Agent,-Company)
+  select(-Agent,-Company)
+
 
 # split train and test
 data_size=nrow(hotel_data)
@@ -34,7 +36,7 @@ var_list <- list(
   "No. of Previous Cancallations"="PreviousCancellations",  
   "No. of Special Requests"="TotalOfSpecialRequests",
   "No. of Changes Made"="BookingChanges",  
-  "Hotel Type"="hotelType",    
+  "Hotel Type"="HotelType",    
   "Customer Type"="CustomerType", 
   "Deposit Type"="DepositType",   
   "Lead Time"="LeadTime",                   
@@ -58,7 +60,7 @@ lr_var_list <- list(
   "No. of Previous Cancallations"="PreviousCancellations",  
   "No. of Special Requests"="TotalOfSpecialRequests",
   "No. of Changes Made"="BookingChanges",  
-  "Hotel Type"="hotelType",    
+  "Hotel Type"="HotelType",    
   "Customer Type"="CustomerType", 
   "Deposit Type"="DepositType",   
   "Lead Time"="LeadTime",                   
@@ -101,6 +103,7 @@ makeTree = function(model_vars, min_split, min_bucket, max_depth) {
     cp = 0  # complexity parameter, at zero prevents pruning on branches
   )
   
+  print("tree trained")
   return(tree)
 }
 
@@ -115,6 +118,7 @@ useTree = function(tree,df) {
   results = as.data.frame(prediction)
   results$truth = data$IsCanceled
   
+  print("prediction completed")
   return(results)
 }
 
@@ -175,6 +179,7 @@ corrplot_num = function(df){
            xaxis = list(tickangle = 30),
            yaxis = list(showticklabels = FALSE))
   
+  print("correlations plotted")
   return(p)
 }
 
@@ -185,7 +190,7 @@ makeLR = function(model_vars){
   data[data==""]<-NA
   data[data=="NULL"]<-NA
   
-  data$hotelType=as.factor(data$hotelType)  
+  data$HotelType=as.factor(data$HotelType)  
   data$ArrivalDateMonth=as.factor(data$ArrivalDateMonth)  
   data$Meal=as.factor(data$Meal)  
   data$MarketSegment=as.factor(data$MarketSegment)  
@@ -200,6 +205,7 @@ makeLR = function(model_vars){
   
   lr_model=glm(as.formula(f),data=data,family=binomial(link="logit"))
   
+  print("logistic regression trained")
   return(lr_model)
 }
 
@@ -214,6 +220,7 @@ useLR = function(model, df) {
   results = as.data.frame(prediction)
   results$truth = data$IsCanceled
 
+  print("logistic regression predicted")
   return(results)
 }
 
@@ -236,9 +243,10 @@ var_imp_plot = function(varImp){
              categoryorder = "total ascending"),
            xaxis = list(title = "Importance")
     )
+  
+  print("Importance of variables plotted")
   return(p)
 }
-
 
 
 # ------- Shiny UI --------
@@ -281,7 +289,7 @@ ui <- navbarPage(
           br(),
           
           selectInput("hotel_type", "Select Hotel:",
-                      choices = c("All", unique(hotel_data$hotelType))),
+                      choices = c("All", unique(hotel_data$HotelType))),
           # Meal, customer, distribution channel filter
           selectInput("meal", "Meal", choices = c("All", unique(hotel_data$Meal))),
           selectInput("customer_type", "Customer Type", choices = c("All", unique(hotel_data$CustomerType))),
@@ -295,7 +303,7 @@ ui <- navbarPage(
           selectInput(inputId = "x",
                       label = "Predictor variable:",
                       choices = c("Customer Type" = "CustomerType",
-                                  "Hotel Type" = "hotelType",
+                                  "Hotel Type" = "HotelType",
                                   "Deposit Status" = "DepositType")),
           # insert select for test type 
           radioButtons("y", "Anova Test Type:",
@@ -325,7 +333,7 @@ ui <- navbarPage(
         sidebarPanel(
           
           selectInput("HotelType", "Select Hotel:",
-                      choices = c("All", unique(hotel_data$hotelType))),
+                      choices = c("All", unique(hotel_data$HotelType))),
           
           # Lead time range filter
           sliderInput("LeadTime", "Lead Time Range (Days)", 
@@ -490,6 +498,7 @@ ui <- navbarPage(
         )#mainPanel
       )#SidebarLayout
     ), #tabPanel 1
+    
    tabPanel(
      "Logistic Regression: Cancellation Prediction",
      sidebarLayout(
@@ -580,7 +589,7 @@ server <- function(input, output) {
   
   filter_data_1 <- reactive({
     hotel_data %>% 
-      filter(if (input$hotel_type == "All") TRUE else hotelType == input$hotel_type) %>%
+      filter(if (input$hotel_type == "All") TRUE else HotelType == input$hotel_type) %>%
       filter(if (input$meal == "All") TRUE else Meal == input$meal) %>%
       filter(if (input$customer_type == "All") TRUE else CustomerType == input$customer_type) %>%
       filter(if (input$distribution_channel == "All") TRUE else DistributionChannel == input$distribution_channel) %>%
@@ -767,7 +776,7 @@ server <- function(input, output) {
   
   filter_data_1 <- reactive({
     hotel_data %>% 
-      filter(if (input$hotel_type == "All") TRUE else hotelType == input$hotel_type) %>%
+      filter(if (input$hotel_type == "All") TRUE else HotelType == input$hotel_type) %>%
       filter(if (input$meal == "All") TRUE else Meal == input$meal) %>%
       filter(if (input$customer_type == "All") TRUE else CustomerType == input$customer_type) %>%
       filter(if (input$distribution_channel == "All") TRUE else DistributionChannel == input$distribution_channel) %>%
@@ -810,6 +819,8 @@ server <- function(input, output) {
       scale_color_discrete(name = "Year") +
       labs(x = "Month", y = "Average Daily Rate") +
       ggtitle("Average Daily Rate by Month and Year")
+    
+    print("ADR plot")
   }) 
   
   
@@ -825,6 +836,8 @@ server <- function(input, output) {
       ylab("Cancellation Rate") +
       scale_fill_discrete(name = "Year and Month") +
       theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    print("Cancellation plot")
   })
   
   
@@ -843,6 +856,8 @@ server <- function(input, output) {
         limits = c(0, 1000),
         breaks = seq(from = 0, to = 1000, by = 50)
       )
+    
+    print("ANOVA plot")
   }) # AnovaPlot
   
   
