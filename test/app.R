@@ -1,107 +1,196 @@
 
 
-pacman::p_load(shiny, shinythemes, tidyverse, rpart,rpart.plot, shinyWidgets)
+
+pacman:: p_load(parallelPlot, ggplot2, plotly, tidyverse, shiny, gt, gtsummary, ggalluvial, gmodels, readxl, DT, ggstatsplot, shinyWidgets)
 set.seed(123)
 
 # loading data
 hotel_data <- read.csv('data/hotel.csv')
-
-# split train and test
-index <- sample(1:601, size = trunc(.8 * 601))
-train_df <- hotel_data %>%
-  filter(row_number() %in% index)
-
-test_df <- hotel_data %>%
-  filter(!(row_number() %in% index))
-
-var_list <- names(hotel_data)[3:33]
-var_list_default <- var_list[1:3]
+hotel_data <- hotel_data %>% 
+  mutate(Meal = str_trim(Meal))
 
 
-ui <- shinyUI(fluidPage(
-  sidebarPanel(
-    pickerInput(
-      inputId = "model_vars",
-      label = NULL,  # label given in outer code
-      choices = var_list,
-      selected = var_list_default,
-      options = list(`actions-box` = TRUE),
-      multiple = TRUE
-    ),
-    actionButton(
-      inputId = "createModel",
-      label = "Create Model",
-      class = "btn-primary"  # makes it blue!
-    ),
-    h4("Minimum Split"),
-    helpText(
-      "If at a given node N is below this value, that node cannot",
-      "be split any further: it is a terminal node of the tree."
-    ),
-    sliderInput(
-      inputId = "min_split",
-      label = NULL,  # label given in outer code
-      min = 2,       # two is the smallest that could be split
-      max = 10,      # chosen to not make the models too wild
-      value = 2      # defaults to not having an artifical minimum
-    ),
+ui <- navbarPage(
+  title = "Hotel Data Analytical Dashboard",
+  fluid = TRUE,
+  theme='simplex',
+  id = "navbarID",
+  
+  navbarMenu(
+    "Know Your Business",
+    icon = icon('address-card'),
+    tabPanel(
+      "Average Booking Price",
+      sidebarLayout(
+        sidebarPanel(
+          h3("ADR Over Time"),
+          helpText("The ... plot is used to reveal the timely trend of Average Daily Rate. "),
+          br(),
+          
+          selectInput("hotel_type", "Select Hotel:",
+                      choices = c("All", unique(hotel_data$hotelType))),
+          # Meal, customer, distribution channel filter
+          selectInput("meal", "Meal", choices = c("All", unique(hotel_data$Meal))),
+          selectInput("customer_type", "Customer Type", choices = c("All", unique(hotel_data$CustomerType))),
+          selectInput("distribution_channel", "Distribution Channel", choices = c("All", unique(hotel_data$DistributionChannel))),
+          
+          h3("ANOVA Test"),
+          helpText("The ANOVA test is used to discover the relationship between the selected variable and the ADR (price). "),
+          br(),
+          
+          # for anova
+          selectInput(inputId = "x",
+                      label = "Predictor variable:",
+                      choices = c("Customer Type" = "CustomerType",
+                                  "Hotel Type" = "hotelType",
+                                  "Deposit Status" = "DepositType")),
+          # insert select for test type 
+          radioButtons("y", "Anova Test Type:",
+                       c("Non-Parametric" = "np",
+                         "Baeyes Factor" = "bf")), 
+          submitButton("Apply Changes")
+        ), #sidebarpanel
+        
+        mainPanel(
+          # Plot1
+          h3('Main title'),
+          fluidRow(
+            plotOutput("hotel_avr"),
+            ),
+          fluidRow(
+            plotOutput("AnovaPlot")
+          )
+        ) #mainpanel
+      ) #sidebarlayout
+    ), #tabpanel
     
-    br(),
+    # ------ Tab 2. Filters affecting cancellation rate plot
     
-    h4("Minimum Bucket Size"),
-    helpText(
-      "If creating a given split would cause N₁ or N₂ to fall below",
-      "this minimum, then that split isn't made part of the",
-      "decision tree."
-    ),
-    sliderInput(
-      inputId = "min_bucket",
-      label = NULL,  # label given in outer code
-      min = 1,       # can't have buckets of size zero
-      max = 30,      # rpart default is minbucket = 3*minsplit
-      value = 1     # defaults to not having an artifical minimum
-    ),
-    br(),
-    h4("Maximum Tree Depth"),
-    helpText(
-      "Control the maximum depth that the decision tree can reach.",
-      "Note that, depending on what features are being used and the",
-      "values of the other parameters, you may end up with a tree",
-      "much shallower than the maximum."
-    ),
-    sliderInput(
-      inputId = "max_depth",
-      label = NULL,  # label given in outer code
-      min = 2,       # a min of 2 allows for at least one split
-      max = 30,      # rpart can't do 31+ depth on 32-bit machines
-      value = 5      # chosen to not make the default too wild
-    )
-  ),
-  mainPanel(
-    plotOutput("plot")
+    tabPanel(
+      "Cancellation Rate",
+      sidebarLayout(
+        sidebarPanel(
+          
+          selectInput("HotelType", "Select Hotel:",
+                      choices = c("All", unique(hotel_data$hotelType))),
+          
+          # Lead time range filter
+          sliderInput("LeadTime", "Lead Time Range (Days)", 
+                      min = 0, max = max(hotel_data$LeadTime), value = c(0, max(hotel_data$LeadTime))),
+          
+          # Number of booking changes range filter
+          sliderInput("BookingChanges", "Number of Booking Changes", 
+                      min = 0, max = max(hotel_data$BookingChanges), value = c(0, max(hotel_data$BookingChanges))),
+          
+          # Checkbox filter for deposit type
+          checkboxGroupInput("DepositType", "Deposit Type", 
+                             choices = unique(hotel_data$DepositType), selected = unique(hotel_data$DepositType)),
+          
+          # Only one option can be selected in the Repeated Guest checkbox
+          radioButtons("IsRepeatedGuest", "Repeated Guest",
+                       choices = c("All", "Yes", "No"), selected = "All"),
+          
+          # YYYY-MM filter slicer
+          dateRangeInput("YearMonth", "YYYY-MM", 
+                         start = as.Date("2015-01-01"), 
+                         end = as.Date("2017-09-30"), 
+                         format = "yyyy-mm", separator = " - "),
+          
+          submitButton("Apply Changes")), #sidebarpanel
+        
+        mainPanel(
+          # Plot2
+          plotOutput("hotel_cancellation")
+          
+        ) # mainpanel
+      ), # sidebarlayout
+    ), # tabpanel
   )
-))
+)
 
 server <- function(input, output) {
   
-  # Subset the data based on user input
-  data <- reactive({
-    train_df[, c(input$model_vars, "IsCanceled")]
+  filter_data_1 <- reactive({
+    hotel_data %>% 
+            filter(if (input$hotel_type == "All") TRUE else hotelType == input$hotel_type) %>%
+            filter(if (input$meal == "All") TRUE else Meal == input$meal) %>%
+            filter(if (input$customer_type == "All") TRUE else CustomerType == input$customer_type) %>%
+            filter(if (input$distribution_channel == "All") TRUE else DistributionChannel == input$distribution_channel) %>%
+            mutate(ArrivalDateMonthWeek = paste(ArrivalDateMonth, "W", sprintf("%02d", ArrivalDateWeekNumber), sep = "-")) %>%
+            mutate(ArrivalDateMonthWeek = paste(ArrivalDateMonth, "W", sprintf("%02d", ArrivalDateWeekNumber), sep = "-")) %>%
+            group_by(ArrivalDateYear, ArrivalDateMonth, ArrivalDateMonthWeek) %>%
+            summarize(avg_ADR = mean(ADR), sd_ADR = sd(ADR), n = n())
   })
   
-  # Train the model based on user input
-  model = eventReactive(
-    eventExpr = input$createModel,
-    valueExpr = rpart(
-      as.formula(paste("IsCanceled ~."), data, type = "class")
-  )
-  )
+  # Filter the data based on user input
   
-  # Plot the results
-  output$plot <- renderPlot({
-    plot(model()$finalModel)
+  filtered_data2 <- reactive({
+    hotel_data %>%
+      filter(LeadTime >= input$LeadTime[1], LeadTime <= input$LeadTime[2],
+             BookingChanges >= input$BookingChanges[1], BookingChanges <= input$BookingChanges[2],
+             if (input$IsRepeatedGuest == "All") TRUE else IsRepeatedGuest == (input$IsRepeatedGuest == "Yes"),
+             DepositType %in% input$DepositType,
+             if (!is.null(input$YearMonth)) ReservationStatusDate >= input$YearMonth[1] & ReservationStatusDate <= input$YearMonth[2])
   })
   
+  # cancellation rate based on filtered data
+  
+  cancellation_rate <- reactive({
+    filtered_data2() %>%
+      mutate(ArrivalDateMonthWeek = paste(ArrivalDateMonth, "W", sprintf("%02d", ArrivalDateWeekNumber), sep = "-"),
+             ReservationStatusYearMonth = format(as.Date(ReservationStatusDate), "%Y-%m")) %>%
+      group_by(ReservationStatusYearMonth) %>%
+      summarize(CancellationRate = mean(IsCanceled))
+  }) 
+  
+  
+  # Tab 1: Average Rate
+  # Plot a line chart with upper and lower bound based on YYYY-MM ADR
+  
+  output$hotel_avr <- renderPlot({
+    filter_data_1() %>%
+      ggplot(aes(x = factor(ArrivalDateMonth,levels = month.name), y = avg_ADR, color = factor(ArrivalDateYear))) +
+      #geom_line() +
+      geom_ribbon(aes(ymin = avg_ADR - 1.96 * sd_ADR / sqrt(n), ymax = avg_ADR + 1.96 * sd_ADR / sqrt(n)), alpha = 0.2) +
+      scale_color_discrete(name = "Year") +
+      labs(x = "Month", y = "Average Daily Rate") +
+      ggtitle("Average Daily Rate by Month and Year")
+  }) 
+  
+  
+  # Tab 2: Cancellation rate
+  # Plot cancellation rate trend
+  
+  output$hotel_cancellation <- renderPlot({
+    cancellation_rate() %>%
+      ggplot(aes(x = ReservationStatusYearMonth, y = CancellationRate)) +
+      geom_bar(stat = "identity") +
+      ggtitle("Hotel Cancellation Rate") +
+      xlab("Year and Month") +
+      ylab("Cancellation Rate") +
+      scale_fill_discrete(name = "Year and Month") +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  })
+  
+  
+  # Tab 3: Inferential Analysis
+  # Create Anova Plots for ADR means by input
+  
+  output$AnovaPlot <- renderPlot({
+    hotel_data%>%
+      ggbetweenstats(!!input$x, y = ADR, xlab = input$x, 
+                   type = input$y, 
+                   ylab = "ADR", 
+                   title = "Differences in means between Average Daily Rate",
+                   ggplot.component = list(theme(plot.subtitle = element_text(size = 12, face = "bold"),
+                                                 plot.title = element_text(size = 13, face = "bold")))) +
+      scale_y_continuous(
+        limits = c(0, 1000),
+        breaks = seq(from = 0, to = 1000, by = 50)
+      )
+  }) # AnovaPlot
+  
+
 }
 
 # ------- Run the application -------
