@@ -6,24 +6,34 @@
 
 ### --------- Getting Started ---------
 
-pacman:: p_load(shiny, shinythemes, shinyWidgets, 
-                tidyverse, gt, gtsummary, 
-                parallelPlot, ggplot2, plotly, 
-                ggalluvial, gmodels, readxl, DT, ggstatsplot, 
-                rpart, rpart.plot, caret, tibble, PMCMRplus)
+pacman:: p_load(ggplot2, plotly, tidyverse, shiny, gt, gtsummary, ggalluvial, gmodels, readxl, 
+                DT, ggstatsplot, shinyWidgets, ggiraph, billboarder, networkD3, rpart, rpart.plot)
 set.seed(123)
 
 # loading data
-hotel_data <- read.csv('data/hotel.csv')
+# hotel_data <- read.csv('data/hotel.csv')
+hotel_data <- read_xlsx('data/hotel_data_merged.xlsx')
+
+size=nrow(hotel_data)
+index <- sample(1:size, size = 20000)
+
+# only subset 20000 rows due to limit of the server
+hotel_data <- hotel_data %>%
+  filter(row_number() %in% index)
+
+# Dataset for paralll sets  
+par_data <- hotel_data[,c(31, 20, 24, 37)] %>%
+  select(CustomerType, DistributionChannel, ReservedRoomType,HotelType) %>%
+  count(CustomerType, DistributionChannel, ReservedRoomType,HotelType)
+
+# split train and test
 
 hotel_data <- hotel_data %>% 
   mutate(Meal = str_trim(Meal)) %>% 
   select(-Agent,-Company)
 
-
-# split train and test
 data_size=nrow(hotel_data)
-index <- sample(1:data_size, size = 10000)
+index <- sample(1:data_size, size = 5000)
 train_df <- hotel_data %>%
   filter(row_number() %in% index)
 
@@ -36,7 +46,7 @@ var_list <- list(
   "No. of Previous Cancallations"="PreviousCancellations",  
   "No. of Special Requests"="TotalOfSpecialRequests",
   "No. of Changes Made"="BookingChanges",  
-  "Hotel Type"="hotelType",    
+  "Hotel Type"="HotelType",    
   "Customer Type"="CustomerType", 
   "Deposit Type"="DepositType",   
   "Lead Time"="LeadTime",                   
@@ -51,7 +61,7 @@ var_list <- list(
   "Is Repeated Guest?"="IsRepeatedGuest",             
   "Required CarParking Spaces?"="RequiredCarParkingSpaces"
 )
-var_list_default <- var_list[1:9]
+var_list_default <- var_list[1:5]
 
 # for LR model
 lr_var_list <- list(
@@ -59,7 +69,7 @@ lr_var_list <- list(
   "No. of Previous Cancallations"="PreviousCancellations",  
   "No. of Special Requests"="TotalOfSpecialRequests",
   "No. of Changes Made"="BookingChanges",  
-  "Hotel Type"="hotelType",    
+  "Hotel Type"="HotelType",    
   "Customer Type"="CustomerType", 
   "Deposit Type"="DepositType",   
   "Lead Time"="LeadTime",                   
@@ -74,7 +84,7 @@ lr_var_list <- list(
   "Is Repeated Guest?"="IsRepeatedGuest",             
   "Required CarParking Spaces?"="RequiredCarParkingSpaces"
 )
-lr_var_list_default <- lr_var_list[1:9]
+lr_var_list_default <- lr_var_list[1:5]
 
 
 
@@ -182,10 +192,7 @@ corrplot_num = function(df){
 makeLR = function(model_vars){
   data = train_df
   
-  data[data==""]<-NA
-  data[data=="NULL"]<-NA
-  
-  data$hotelType=as.factor(data$hotelType)  
+  data$HotelType=as.factor(data$HotelType)  
   data$ArrivalDateMonth=as.factor(data$ArrivalDateMonth)  
   data$Meal=as.factor(data$Meal)
   data$DistributionChannel=as.factor(data$DistributionChannel)  
@@ -243,27 +250,146 @@ var_imp_plot = function(varImp){
 # ------- Shiny UI --------
 
 ui <- navbarPage(
-  title = "Hotel Data Analytical Dashboard",
+  
+  title = "Hotel Data Analytical Application",
   fluid = TRUE,
   theme='simplex',
   id = "navbarID",
   
-  tabPanel("User Guide",
-           icon = icon('person-chalkboard'),
-           h1("Welcome to our App!"),
-           mainPanel(
-             tags$a(href="https://github.com/mtlmh34/Visual-Analytics-Grp-Project/blob/main/README.md", "Click Here for user guide!")
-           )
+  tabPanel(
+    "Welcome Page",
+     icon = icon('person-chalkboard'),
+     h1("Welcome to our App!"),
+     mainPanel(
+       '- The Hotel Data Analytical Application aims to provide visualizations for data analytics, leading to better decision-making. ', 
+       br(),
+       tags$a(href="https://github.com/mtlmh34/Visual-Analytics-Grp-Project/blob/main/", 
+              "- Github Repository"),
+       br(),
+       br(),
+       h3('The application consists of 3 pages'),
+       fluidRow(
+         column(4, HTML(paste("<center> <b>", 'Know Your Customers', "</b></center> ")),
+                br(),
+                ' - Data visualizations about customer\'s activities, demographic informations, etc. '),
+         column(4, HTML(paste("<center> <b>", 'Know Your Business', "</b></center> ")),
+                br(),
+                '- Data visualizations about key metrics related to the hotel\'s performance, such as average booking price and cancellation rate. '),
+         column(4, HTML(paste("<center> <b>", 'Predictive Analysis', "</b></center> ")),
+                br(),
+                '- Contains two type of machine learning model (Decicion Tree/ Logistic Regression) to predict the possible cancellation of customers. ')
+       )
+     )
   ),
   
   ######### Page 1
-  navbarMenu("Know Your Customer", 
-             icon = icon('briefcase'),
-             tabPanel("Rates",
+  navbarMenu("Know Your Customers",
+             icon = icon('address-card'),
+             tabPanel("Exploratory Data Analysis",
+                      titlePanel("Exploratory Data Analysis"), 
+                      sidebarLayout(
+                        sidebarPanel(
+                          h4("Variable Selection"),
+                          selectInput("HotelType", "Select Hotel:",
+                                      choices = c("All", unique(hotel_data$HotelType))),
+                          selectInput("ArrivalDateMonth", "Select Month:",
+                                      choices = c("All", unique(hotel_data$ArrivalDateMonth))),
+                          selectInput("Continent", "Select Continent:",
+                                      choices = c("All", unique(hotel_data$Continent))),
+                          selectInput("IsCanceled", "Select Booking Status:",
+                                      choices = c("All", "Canceled", "Not Canceled")),
+                          submitButton("Apply Changes")
+                          
+                        ),
+                        mainPanel(
+                          h2("What do we know about our Guests?", style = "font-sil10pt"),
+                          br(),
+                          tabsetPanel(
+                            type = "tabs",
+                            tabPanel("Summary", 
+                                     fluidRow(
+                                       column(4, gt_output("summary_table")),
+                                       h4("Reactive Summary Table"),
+                                       column(6, DTOutput("summary_table1"))
+                                     )
+                            ),
+                            tabPanel("Understand", 
+                                     fluidRow(
+                                       column(10, plotlyOutput("bubble_plot"))
+                                     ),
+                                     br(),
+                                     fluidRow(
+                                       column(4,girafeOutput("special_barplot")), 
+                                       column(4,girafeOutput("carpark_barplot")),
+                                       column(4,girafeOutput("meals_barplot"))
+                                     )
+                            ),
+                            tabPanel("Customer Type", 
+                                     fluidRow(
+                                       column(6, billboarderOutput("pie")),
+                                       column(6, billboarderOutput("pie1"))
+                                     )
+                            ),
+                            tabPanel("Read Me",
+                                     p("This is the Read Me explanation on how to navigate the EDA section of this app."), 
+                                     strong("Summary Tab"),
+                                     p("In this tab, two tables are displayed.The left table is a static table displaying overall summary statistic of the Hotel Dataset while the right table is a reactive table that displays subset of data according to user input filters."),
+                                     p("1. Select desired variables to explore for Hotel, Month, Continent, Booking Status."),
+                                     p("2. Click Apply Changes to see the updated summary table under 'Reactive Summary Table'"),
+                                     strong("Understand Tab"),
+                                     p("In this tab, interactive bubble plots and barplots are displayed to understand the requests of guests"),
+                                     p("1. Select desired variables to explore for Hotel, Month, Continent, Booking Status."),
+                                     p("2. Click Apply Changes to see the updated information on Bubble Chart as well as bar plots to assess operational needs."), 
+                                     strong("Customer Type Tab"),
+                                     p("In this tab, pie charts are used to show the proportion of customer types according to whether they are transient, contract, group and to explore the variation in customers who opt for No Deposit, Non-Refund and Refundable bookings"),
+                                     p("After selection of desired variables to explore, pie chart will be updated. Values can be better accessed by hovering over the pie sections.")
+                            )
+                          )
+                        )
+                      )
              ),
-             tabPanel("Cancellations",
+             tabPanel("Parallel Sets",
+                      sidebarLayout(
+                        sidebarPanel(
+                          tags$h2("Select Desired Variables"),
+                          pickerInput( inputId = "picker",
+                                       label = "Select/deselect all options", 
+                                       choices = names(par_data),
+                                       selected = names(par_data)[5],
+                                       options = list(`actions-box` = TRUE), 
+                                       multiple = TRUE
+                          ), 
+                          submitButton("Apply Changes")
+                          
+                        ),
+                        
+                        mainPanel(
+                          tabsetPanel(
+                            type = "tabs",
+                            tabPanel("Guests", 
+                                     sankeyNetworkOutput("SankeyPlot"))
+                            
+                          )
+                        )
+                      )
              ),
-             tabPanel("Revenue",
+             tabPanel("Inferential Analysis",
+                      titlePanel("Inferential Analysis (Impact on LeadTime)"), 
+                      sidebarLayout(
+                        sidebarPanel(
+                          selectInput(inputId = "x",
+                                      label = "Select Variable:",
+                                      choices = c("Customer Type" = "CustomerType",
+                                                  "Hotel Type" = "HotelType",
+                                                  "Deposit Status" = "DepositType")),
+                          # insert select for test type 
+                          radioButtons("y", "Select Test Statistic Type:",
+                                       c("Non-Parametric" = "np",
+                                         "Baeyes Factor" = "bf")), 
+                          submitButton("Apply Changes")
+                        ),
+                        mainPanel(plotOutput("LeadTime_Anova"))
+                      )
              )
   ),
   
@@ -280,7 +406,7 @@ ui <- navbarPage(
           br(),
           
           selectInput("hotel_type", "Select Hotel:",
-                      choices = c("All", unique(hotel_data$hotelType))),
+                      choices = c("All", unique(hotel_data$HotelType))),
           # Meal, customer, distribution channel filter
           selectInput("meal", "Meal", choices = c("All", unique(hotel_data$Meal))),
           selectInput("customer_type", "Customer Type", choices = c("All", unique(hotel_data$CustomerType))),
@@ -294,18 +420,22 @@ ui <- navbarPage(
           selectInput(inputId = "x",
                       label = "Predictor variable:",
                       choices = c("Customer Type" = "CustomerType",
-                                  "Hotel Type" = "hotelType",
+                                  "Hotel Type" = "HotelType",
                                   "Deposit Status" = "DepositType")),
           # insert select for test type 
-          radioButtons("y", "Anova Test Type:",
-                       c("Non-Parametric" = "np",
-                         "Baeyes Factor" = "bf")), 
+          radioGroupButtons(
+            "y", "Anova Test Type:",
+            c("Non-Parametric" = "np",
+              "Bayes Factor" = "bf"),
+            status = "primary"
+          ), 
+          
           submitButton("Apply Changes")
         ), #sidebarpanel
         
         mainPanel(
           # Plot1
-          h3('Main title'),
+          h3('Visualizations to Understand Your Business'),
           fluidRow(
             plotOutput("hotel_avr"),
           ),
@@ -323,8 +453,8 @@ ui <- navbarPage(
       sidebarLayout(
         sidebarPanel(
           
-          selectInput("hotelType", "Select Hotel:",
-                      choices = c("All", unique(hotel_data$hotelType))),
+          selectInput("HotelType", "Select Hotel:",
+                      choices = c("All", unique(hotel_data$HotelType))),
           
           # Lead time range filter
           sliderInput("LeadTime", "Lead Time Range (Days)", 
@@ -339,8 +469,11 @@ ui <- navbarPage(
                              choices = unique(hotel_data$DepositType), selected = unique(hotel_data$DepositType)),
           
           # Only one option can be selected in the Repeated Guest checkbox
-          radioButtons("IsRepeatedGuest", "Repeated Guest",
-                       choices = c("All", "Yes", "No"), selected = "All"),
+          radioGroupButtons(
+            "IsRepeatedGuest", "Repeated Guest",
+            choices = c("All", "Yes", "No"), selected = "All",
+            status = "primary"
+          ), 
           
           # YYYY-MM filter slicer
           dateRangeInput("YearMonth", "YYYY-MM", 
@@ -406,10 +539,10 @@ ui <- navbarPage(
           sliderInput(
             inputId = "min_split",
             label = NULL,  # label given in outer code
-            min = 50,       # two is the smallest that could be split
-            max = 1000,      # chosen to not make the models too wild
-            value = 100,      # defaults to not having an artifical minimum,
-            step=50
+            min = 10,       # two is the smallest that could be split
+            max = 200,      # chosen to not make the models too wild
+            value = 50,      # defaults to not having an artifical minimum,
+            step=10
           ),
           
           br(),
@@ -422,8 +555,8 @@ ui <- navbarPage(
             inputId = "min_bucket",
             label = NULL,  # label given in outer code
             min = 10,       # can't have buckets of size zero
-            max = 300,      # rpart default is minbucket = 3*minsplit
-            value = 50,     # defaults to not having an artifical minimum
+            max = 100,      # rpart default is minbucket = 3*minsplit
+            value = 20,     # defaults to not having an artifical minimum
             step = 10
           ),
           br(),
@@ -561,12 +694,9 @@ ui <- navbarPage(
            ) # column 2
          ), # fluidRow
          fluidRow(
-           column(6,
+           column(9,
                   h3("Importance of Variables"),
                   plotlyOutput("lr_var_importance_bar")
-                  ),
-           column(6,
-                  h3("Make Prediction")
                   )
          )
        )#MainPanel
@@ -580,9 +710,194 @@ ui <- navbarPage(
 # ------- server --------
 server <- function(input, output) {
   
-  filter_data_1 <- reactive({
+  # Create a reactive data frame for EDA 
+  filtered_data_1 <- reactive({
+    hotel_data %>%
+      filter(if (input$HotelType == "All") TRUE else HotelType == input$HotelType) %>%
+      filter(if (input$ArrivalDateMonth == "All") TRUE else ArrivalDateMonth == input$ArrivalDateMonth) %>%
+      filter(if (input$Continent == "All") TRUE else Continent == input$Continent) %>%
+      filter(if (input$IsCanceled == "All") TRUE else IsCanceled == (input$IsCanceled == "Canceled"))
+  })
+  
+  # Create a summary table for EDA
+  output$summary_table1 <- renderDT({
+    filtered_data_1() %>%
+      group_by(HotelType, IsCanceled) %>%
+      summarize(total_bookings = n(),
+                mean_adr = mean(ADR),
+                mean_lead_time = mean(LeadTime)) %>%
+      datatable()
+  })
+  
+  # Create GTsummary table for EDA
+  output$summary_table <- render_gt({
+    hotel_data %>%
+      tbl_summary(
+        by = HotelType, 
+        type = c(ADR, LeadTime) ~ "continuous",
+        include = c(ADR, LeadTime, IsCanceled),
+        statistic = all_continuous() ~ "{mean}",
+        missing = "no"
+      ) %>%
+      add_stat_label() %>%
+      add_n() %>%
+      as_gt() %>%
+      tab_header(md("**Overall Summary Table of Hotel Dataset**"))
+  })
+  
+  #Create an Interactive filter for bubble plot 
+  
+  bubblefiltered <- reactive({
+    filtered_data_1()%>% 
+      select(Adults, Children, Babies, Continent) %>%
+      group_by(Continent) %>%
+      summarize(Adults = sum(Adults), Children = sum(Children), Babies= sum(Babies)) %>%
+      ungroup() %>% 
+      as_tibble()
+    
+  })
+  
+  # Create an Interactive bubble plot for EDA
+  output$bubble_plot <- renderPlotly({
+    plot_ly(bubblefiltered(), x = ~Adults, y = ~Children, size = ~Adults + Children + Babies, color = ~Continent) %>% 
+      layout(legend = list(orientation = "h",   # show entries horizontally
+                           xanchor = "center",  # use center of legend as anchor
+                           x = 0.5,
+                           y = 1.8))         # put legend in center of xaxis 
+  }) 
+  
+  # Create Specialrequests by repeat or non repeat 
+  output$special_barplot <- renderGirafe({
+    
+    q <- filtered_data_1() %>% 
+      group_by(IsRepeatedGuest) %>%
+      summarize(sum = sum(TotalOfSpecialRequests)) %>% 
+      ggplot(aes(x = IsRepeatedGuest, y = sum , fill = IsRepeatedGuest)) +
+      labs(x = "New Vs Repeated Guests", title = "Total Special Requests") + 
+      scale_x_continuous(breaks=seq(from=0,to=1, by = 1), labels=c("First Time", "Repeat")) + 
+      geom_bar_interactive(stat = "identity", aes(tooltip = sum , data_id = sum ), show.legend = FALSE) 
+    # geom_point_interactive(aes(tooltip = sum , data_id = sum )) 
+    
+    girafe(ggobj = q, width_svg = 4)
+    
+  })
+  
+  
+  # Create Carpark space requests by repeat or non repeat 
+  output$carpark_barplot <- renderGirafe({
+    
+    v <- filtered_data_1() %>% 
+      group_by(IsRepeatedGuest) %>%
+      summarize(sum = sum(RequiredCarParkingSpaces)) %>% 
+      ggplot(aes(x = IsRepeatedGuest, y = sum , fill = IsRepeatedGuest)) +
+      # theme(legend.positon = "none") + 
+      labs( x = "New Vs Repeated Guests", title = "Total Parking Spaces Required") + 
+      scale_x_continuous(breaks=seq(from=0,to=1, by = 1), labels=c("First Time", "Repeat")) + 
+      geom_bar_interactive(stat = "identity", aes(tooltip = sum , data_id = sum ), show.legend = FALSE) 
+    #geom_point_interactive(aes(tooltip = sum , data_id = sum )) 
+    
+    
+    girafe(ggobj = v, width_svg = 4)
+    
+  })
+  
+  # Create Meals Barplot for EDA
+  output$meals_barplot <- renderGirafe({
+    
+    z <- filtered_data_1() %>% 
+      subset(Meal != "Undefined") %>% 
+      group_by(Meal) %>%
+      summarize(count = n()) %>%
+      ggplot(aes(x = Meal, y = count, fill = Meal)) +
+      labs(title = "Number of Meals", x = "Meal Type") + 
+      geom_bar_interactive(stat = "identity", aes(tooltip = count , data_id = count ), show.legend = FALSE) 
+    #geom_point_interactive(aes(tooltip = count , data_id = count ))  
+    
+    girafe(ggobj = z, width_svg = 4)
+    
+  })
+  
+  # Create pie chart of customer type for EDA 
+  output$pie <- renderBillboarder({
+    piedata <-filtered_data_1() %>%
+      group_by(CustomerType) %>%
+      summarize(n = n()) 
+    
+    billboarder() %>% 
+      bb_piechart(data = piedata)
+    
+  })
+  
+  # Create pie chart of Deposit Type for EDA 
+  output$pie1 <- renderBillboarder({
+    piedata1 <-filtered_data_1() %>%
+      group_by(DepositType) %>%
+      summarize(n = n()) 
+    
+    billboarder() %>% 
+      bb_piechart(data = piedata1)
+    
+  })
+  # ---------------------------------------------------------------------------
+  
+  # Create reactive dataset filter for parallel set input selection 
+  
+  # Filter data based on picker input
+  filtered_data_2 <- reactive({
+    par_data %>% 
+      select(all_of(input$picker))
+  })
+  
+  # Create alluvial plot
+  output$SankeyPlot <- renderSankeyNetwork({
+    filtered_data_2() %>% 
+      mutate_all(as.character) %>% 
+      filter_all(any_vars(!is.na(.))) %>%
+      gather(key = "variable", value = "value") %>% 
+      group_by(variable, value) %>% 
+      summarize(count = n()) %>% 
+      ungroup() %>% 
+      mutate(id = row_number()) %>% 
+      select(id, variable, value, count) %>% 
+      group_by(variable) %>% 
+      mutate(group_id = row_number()) %>% 
+      ungroup() %>% 
+      select(-id) %>% 
+      mutate(variable = factor(variable, levels = input$picker)) %>% 
+      mutate(value = factor(value)) %>% 
+      networkD3::sankeyNetwork(
+        Links = data.frame(source = rep(1:n_distinct(.$variable), n_distinct(.$value)), 
+                           target = as.numeric(as.factor(.$value)), 
+                           value = .$count), 
+        Nodes = data.frame(name = levels(.$value), 
+                           group = .$group_id), 
+        Source = "source", 
+        Target = "target", 
+        Value = "value", 
+        NodeID = "name", 
+        NodeGroup = "group", 
+        fontSize = 12, 
+        nodeWidth = 25
+      )
+  })
+  
+  # ------------------------------------------------------------------------------
+  # Create Anova Plots
+  output$LeadTime_Anova <- renderPlot({
+    ggbetweenstats(hotel_data, !!input$x, y = LeadTime, 
+                   xlab = input$x, 
+                   type = input$y, 
+                   pairwise.display = "significant",
+                   ylab = "Lead Time", 
+                   title = "Differences in means of Lead Time",
+                   ggplot.component = list(theme(plot.subtitle = element_text(size = 12, face = "bold"),
+                                                 plot.title = element_text(size = 15, face = "bold"))))
+  })
+  
+  
+  filter_data_3 <- reactive({
     hotel_data %>% 
-      filter(if (input$hotel_type == "All") TRUE else hotelType == input$hotel_type) %>%
+      filter(if (input$hotel_type == "All") TRUE else HotelType == input$hotel_type) %>%
       filter(if (input$meal == "All") TRUE else Meal == input$meal) %>%
       filter(if (input$customer_type == "All") TRUE else CustomerType == input$customer_type) %>%
       filter(if (input$distribution_channel == "All") TRUE else DistributionChannel == input$distribution_channel) %>%
@@ -594,7 +909,7 @@ server <- function(input, output) {
   
   # Filter the data based on user input
   
-  filtered_data2 <- reactive({
+  filter_data_4 <- reactive({
     hotel_data %>%
       filter(LeadTime >= input$LeadTime[1], LeadTime <= input$LeadTime[2],
              BookingChanges >= input$BookingChanges[1], BookingChanges <= input$BookingChanges[2],
@@ -606,7 +921,7 @@ server <- function(input, output) {
   # cancellation rate based on filtered data
   
   cancellation_rate <- reactive({
-    filtered_data2() %>%
+    filter_data_4() %>%
       mutate(ArrivalDateMonthWeek = paste(ArrivalDateMonth, "W", sprintf("%02d", ArrivalDateWeekNumber), sep = "-"),
              ReservationStatusYearMonth = format(as.Date(ReservationStatusDate), "%Y-%m")) %>%
       group_by(ReservationStatusYearMonth) %>%
@@ -618,7 +933,7 @@ server <- function(input, output) {
   # Plot a line chart with upper and lower bound based on YYYY-MM ADR
   
   output$hotel_avr <- renderPlot({
-    filter_data_1() %>%
+    filter_data_3() %>%
       ggplot(aes(x = factor(ArrivalDateMonth,levels = month.name), y = avg_ADR, color = factor(ArrivalDateYear))) +
       #geom_line() +
       geom_ribbon(aes(ymin = avg_ADR - 1.96 * sd_ADR / sqrt(n), ymax = avg_ADR + 1.96 * sd_ADR / sqrt(n)), alpha = 0.2) +
@@ -765,88 +1080,6 @@ server <- function(input, output) {
   output$lr_var_importance_bar = renderPlotly(
     var_imp_plot(lr_var_importance())
   )
-  
-  
-  filter_data_1 <- reactive({
-    hotel_data %>% 
-      filter(if (input$hotel_type == "All") TRUE else hotelType == input$hotel_type) %>%
-      filter(if (input$meal == "All") TRUE else Meal == input$meal) %>%
-      filter(if (input$customer_type == "All") TRUE else CustomerType == input$customer_type) %>%
-      filter(if (input$distribution_channel == "All") TRUE else DistributionChannel == input$distribution_channel) %>%
-      mutate(ArrivalDateMonthWeek = paste(ArrivalDateMonth, "W", sprintf("%02d", ArrivalDateWeekNumber), sep = "-")) %>%
-      mutate(ArrivalDateMonthWeek = paste(ArrivalDateMonth, "W", sprintf("%02d", ArrivalDateWeekNumber), sep = "-")) %>%
-      group_by(ArrivalDateYear, ArrivalDateMonth, ArrivalDateMonthWeek) %>%
-      summarize(avg_ADR = mean(ADR), sd_ADR = sd(ADR), n = n())
-  })
-  
-  # Filter the data based on user input
-  
-  filtered_data2 <- reactive({
-    hotel_data %>%
-      filter(LeadTime >= input$LeadTime[1], LeadTime <= input$LeadTime[2],
-             BookingChanges >= input$BookingChanges[1], BookingChanges <= input$BookingChanges[2],
-             if (input$IsRepeatedGuest == "All") TRUE else IsRepeatedGuest == (input$IsRepeatedGuest == "Yes"),
-             DepositType %in% input$DepositType,
-             if (!is.null(input$YearMonth)) ReservationStatusDate >= input$YearMonth[1] & ReservationStatusDate <= input$YearMonth[2])
-  })
-  
-  # cancellation rate based on filtered data
-  
-  cancellation_rate <- reactive({
-    filtered_data2() %>%
-      mutate(ArrivalDateMonthWeek = paste(ArrivalDateMonth, "W", sprintf("%02d", ArrivalDateWeekNumber), sep = "-"),
-             ReservationStatusYearMonth = format(as.Date(ReservationStatusDate), "%Y-%m")) %>%
-      group_by(ReservationStatusYearMonth) %>%
-      summarize(CancellationRate = mean(IsCanceled))
-  }) 
-  
-  
-  # Tab 1: Average Rate
-  # Plot a line chart with upper and lower bound based on YYYY-MM ADR
-  
-  output$hotel_avr <- renderPlot({
-    filter_data_1() %>%
-      ggplot(aes(x = factor(ArrivalDateMonth,levels = month.name), y = avg_ADR, color = factor(ArrivalDateYear))) +
-      #geom_line() +
-      geom_ribbon(aes(ymin = avg_ADR - 1.96 * sd_ADR / sqrt(n), ymax = avg_ADR + 1.96 * sd_ADR / sqrt(n)), alpha = 0.2) +
-      scale_color_discrete(name = "Year") +
-      labs(x = "Month", y = "Average Daily Rate") +
-      ggtitle("Average Daily Rate by Month and Year")
-  }) 
-  
-  
-  # Tab 2: Cancellation rate
-  # Plot cancellation rate trend
-  
-  output$hotel_cancellation <- renderPlot({
-    cancellation_rate() %>%
-      ggplot(aes(x = ReservationStatusYearMonth, y = CancellationRate)) +
-      geom_bar(stat = "identity") +
-      ggtitle("Hotel Cancellation Rate") +
-      xlab("Year and Month") +
-      ylab("Cancellation Rate") +
-      scale_fill_discrete(name = "Year and Month") +
-      theme(axis.text.x = element_text(angle = 90, hjust = 1))
-  })
-  
-  
-  # Tab 3: Inferential Analysis
-  # Create Anova Plots for ADR means by input
-  
-  output$AnovaPlot <- renderPlot({
-    hotel_data%>%
-      ggbetweenstats(!!input$x, y = ADR, xlab = input$x, 
-                     type = input$y, 
-                     ylab = "ADR", 
-                     title = "Differences in means between Average Daily Rate",
-                     ggplot.component = list(theme(plot.subtitle = element_text(size = 12, face = "bold"),
-                                                   plot.title = element_text(size = 13, face = "bold")))) +
-      scale_y_continuous(
-        limits = c(0, 1000),
-        breaks = seq(from = 0, to = 1000, by = 50)
-      )
-  }) # AnovaPlot
-  
   
 }
 
