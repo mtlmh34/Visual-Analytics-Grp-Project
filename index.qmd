@@ -10,6 +10,53 @@ format: html
 editor: visual
 ---
 
-## About This Project
+## \# About This Project
 
 Welcome to ISSS 608 Visual Analytics and Application Group 1's project! Our project is about designing a dashboard for hotel operators to view different operations-impactful variables for actionable insights related to their business.
+
+Link to the Application: [Hotel-Viz](https://hotel-viz.shinyapps.io/hotel_viz/) (Or navigate through the directory on the top)
+
+## \# About Us
+
+![](pictures/lmh.png){fig-align="center" width="255"}
+
+<center>
+<figcaption>
+Minghao
+</figcaption>
+<style>
+img {
+  border-radius: 50%;
+}
+</style>
+</center>
+<br></br>
+
+![](pictures/lmh.png){fig-align="center" width="255"}
+
+<center>
+<figcaption>
+Ashley
+</figcaption>
+<style>
+img {
+  border-radius: 50%;
+}
+</style>
+</center>
+<br></br>
+
+
+![](pictures/lmh.png){fig-align="center" width="255"}
+
+<center>
+<figcaption>
+Christiana
+</figcaption>
+<style>
+img {
+  border-radius: 50%;
+}
+</style>
+</center>
+<br></br>

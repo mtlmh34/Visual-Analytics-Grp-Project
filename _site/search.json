@@ -4,7 +4,7 @@
     "href": "index.html",
     "title": "Home",
     "section": "",
-    "text": "Welcome to ISSS 608 Visual Analytics and Application Group 1’s project! Our project is about designing a dashboard for hotel operators to view different operations-impactful variables for actionable insights related to their business."
+    "text": "Welcome to ISSS 608 Visual Analytics and Application Group 1’s project! Our project is about designing a dashboard for hotel operators to view different operations-impactful variables for actionable insights related to their business.\nLink to the Application: Hotel-Viz (Or navigate through the directory on the top)"
   },
   {
     "objectID": "about.html",
@@ -68,5 +68,12 @@
     "title": "Methodology",
     "section": "Reference",
     "text": "Reference\nBarros. (2005). Measuring efficiency in the hotel sector. Annals of Tourism Research, 32(2), 456–477. https://doi.org/10.1016/j.annals.2004.07.011 Falk, & Vieru, M. (2018).\nModelling the cancellation behaviour of hotel guests. International Journal of Contemporary Hospitality Management, 30(10), 3100–3116. https://doi.org/10.1108/IJCHM-08-2017-0509\nSurvey: 86% Of Hotels Say Supply Chain Issues Impacting Operations | American Hotel & Logging Association. (n.d.). https://www.ahla.com/news/survey-86-hotels-say-supply-chain-issues-impacting-operations"
+  },
+  {
+    "objectID": "index.html#about-us",
+    "href": "index.html#about-us",
+    "title": "Home",
+    "section": "# About Us",
+    "text": "# About Us\n\n\n\n\n\n\n\nMinghao\n\n\n\n\n\n\n\n\n\n\n\nAshley\n\n\n\n\n\n\n\n\n\n\n\nChristiana"
   }
 ]
