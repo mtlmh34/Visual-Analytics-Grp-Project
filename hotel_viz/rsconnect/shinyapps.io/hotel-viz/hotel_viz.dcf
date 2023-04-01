@@ -5,10 +5,10 @@ account: hotel-viz
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8445596
-bundleId: 7036971
+bundleId: 7036993
 url: https://hotel-viz.shinyapps.io/hotel_viz/
-when: 1680378346.60744
-lastSyncTime: 1680378346.60745
+when: 1680379265.40509
+lastSyncTime: 1680379265.40511
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: data/02. Data in Brief - Hotel Booking Demand Datasets.pdf
+ignoredFiles: data/02. Data in Brief - Hotel Booking Demand Datasets.pdf|data/hotel.csv
