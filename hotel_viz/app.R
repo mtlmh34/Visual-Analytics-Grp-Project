@@ -282,7 +282,7 @@ var_imp_plot = function(varImp){
 
 ui <- navbarPage(
   
-  title = "Hotel Data Analytical Application",
+  title = "HotelViz",
   fluid = TRUE,
   theme='simplex',
   id = "navbarID",
@@ -290,15 +290,16 @@ ui <- navbarPage(
   tabPanel(
     "Welcome Page",
      icon = icon('person-chalkboard'),
-     h1("Welcome to our App!"),
      mainPanel(
+       h2("HotelViz - The Hotel Data Analytical Application"),
+       hr(),
        '- The Hotel Data Analytical Application aims to provide visualizations for data analytics, leading to better decision-making. ', 
        br(),
        tags$a(href="https://github.com/mtlmh34/Visual-Analytics-Grp-Project/blob/main/", 
               "- Github Repository"),
-       br(),
-       br(),
-       h3('The application consists of 3 pages'),
+       br(),br(),
+       
+       h3('About The Application'),hr(),
        fluidRow(
          column(4, HTML(paste("<center> <b>", 'Know Your Customers', "</b></center> ")),
                 br(),
@@ -309,7 +310,18 @@ ui <- navbarPage(
          column(4, HTML(paste("<center> <b>", 'Predictive Analysis', "</b></center> ")),
                 br(),
                 '- Contains two type of machine learning model (Decicion Tree/ Logistic Regression) to predict the possible cancellation of customers. ')
-       )
+       ), 
+       br(),br(),
+       
+       h3('Other Links'),hr(),
+       fluidRow(
+         column(5, tags$a(href="https://visual-analytics-2023jan-group1.netlify.app/", 
+                "- Project HomePage"),br(),
+         tags$a(href="https://visual-analytics-2023jan-group1.netlify.app/user_guide.html", 
+                "- User Guide"))
+       ),
+       br(),br(),hr(),
+       helpText('Hope you enjoy our App!')
      )
   ),
   
@@ -434,7 +446,7 @@ ui <- navbarPage(
   ######### Page 2
   navbarMenu(
     "Know Your Business",
-    icon = icon('address-card'),
+    icon = icon("business-time"),
     tabPanel(
       "Average Booking Price",
       sidebarLayout(
