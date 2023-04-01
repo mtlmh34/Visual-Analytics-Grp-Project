@@ -6,18 +6,17 @@
 
 ### --------- Getting Started ---------
 
-pacman:: p_load(ggplot2, plotly, tidyverse, shiny, gt, gtsummary, ggalluvial, gmodels, readxl, 
-                DT, ggstatsplot, shinyWidgets, ggiraph, billboarder, networkD3, rpart, rpart.plot)
+pacman:: p_load(ggplot2, plotly, tidyverse, shiny, gt, gtsummary, ggalluvial, gmodels,
+                DT, ggstatsplot, shinyWidgets, ggiraph, billboarder, networkD3, rpart, rpart.plot, caret)
 set.seed(123)
 
 # loading data
 # hotel_data <- read.csv('data/hotel.csv')
-hotel_data <- read_xlsx('data/hotel_data_merged.xlsx')
+hotel_data <- read.csv('data/hotel_data_merged.csv')
 
+# only subset 50000 rows due to limit of the server
 size=nrow(hotel_data)
-index <- sample(1:size, size = 20000)
-
-# only subset 20000 rows due to limit of the server
+index <- sample(1:size, size = 50000)
 hotel_data <- hotel_data %>%
   filter(row_number() %in% index)
 
@@ -33,7 +32,7 @@ hotel_data <- hotel_data %>%
   select(-Agent,-Company)
 
 data_size=nrow(hotel_data)
-index <- sample(1:data_size, size = 5000)
+index <- sample(1:data_size, size = 25000)
 train_df <- hotel_data %>%
   filter(row_number() %in% index)
 
@@ -89,6 +88,38 @@ lr_var_list_default <- lr_var_list[1:5]
 
 
 ### --------- functions --------
+
+para_plot <- function(variables, color){
+  data <- par_data
+  len <- length(variables)
+  if(len==2){
+    g <- ggplot(data = par_data,
+                aes(axis1 = variables[1], y = n))
+  }
+  else if(len==3){
+    g <- ggplot(data = par_data,
+                aes(axis1 = !!sym(variables[1]), axis2 = !!sym(variables[2]), y = n))
+  }
+  else if(len==4){
+    g <- ggplot(data = par_data,
+                aes(axis1 = !!sym(variables[1]), axis2 = !!sym(variables[2]), axis3 = !!sym(variables[3]), y = n))
+  }
+  else {
+    g <- ggplot(data = par_data,
+                aes(axis1 = !!sym(variables[1]), axis2 = !!sym(variables[2]), axis3 = !!sym(variables[3]),
+                    axis4 = !!sym(variables[4]), y = n))
+  }
+  g <- g +
+    ylab("No. of Bookings") +
+    geom_alluvium(aes(fill = !!sym(color))) +
+    geom_stratum() +
+    geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
+    theme_minimal() +
+    ggtitle("Parallel Plot")
+  
+  return(g)
+}
+
 # Train Tree Model
 makeTree = function(model_vars, min_split, min_bucket, max_depth) {
   # Takes a list of model variables (strings), a minimum split parameter
@@ -353,12 +384,19 @@ ui <- navbarPage(
                         sidebarPanel(
                           tags$h2("Select Desired Variables"),
                           pickerInput( inputId = "picker",
-                                       label = "Select/deselect all options", 
+                                       label = "Please select n and 2+ other variables", 
                                        choices = names(par_data),
-                                       selected = names(par_data)[5],
+                                       selected = names(par_data)[4:5],
                                        options = list(`actions-box` = TRUE), 
                                        multiple = TRUE
-                          ), 
+                          ),
+                          awesomeRadio(
+                            inputId = "color",
+                            label = "Select the category for color", 
+                            choices = names(par_data)[1:4],
+                            selected = names(par_data)[1],
+                            checkbox = TRUE
+                          ),
                           submitButton("Apply Changes")
                           
                         ),
@@ -367,7 +405,7 @@ ui <- navbarPage(
                           tabsetPanel(
                             type = "tabs",
                             tabPanel("Guests", 
-                                     sankeyNetworkOutput("SankeyPlot"))
+                                     plotOutput("parallelPlot"))
                             
                           )
                         )
@@ -849,36 +887,8 @@ server <- function(input, output) {
   })
   
   # Create alluvial plot
-  output$SankeyPlot <- renderSankeyNetwork({
-    filtered_data_2() %>% 
-      mutate_all(as.character) %>% 
-      filter_all(any_vars(!is.na(.))) %>%
-      gather(key = "variable", value = "value") %>% 
-      group_by(variable, value) %>% 
-      summarize(count = n()) %>% 
-      ungroup() %>% 
-      mutate(id = row_number()) %>% 
-      select(id, variable, value, count) %>% 
-      group_by(variable) %>% 
-      mutate(group_id = row_number()) %>% 
-      ungroup() %>% 
-      select(-id) %>% 
-      mutate(variable = factor(variable, levels = input$picker)) %>% 
-      mutate(value = factor(value)) %>% 
-      networkD3::sankeyNetwork(
-        Links = data.frame(source = rep(1:n_distinct(.$variable), n_distinct(.$value)), 
-                           target = as.numeric(as.factor(.$value)), 
-                           value = .$count), 
-        Nodes = data.frame(name = levels(.$value), 
-                           group = .$group_id), 
-        Source = "source", 
-        Target = "target", 
-        Value = "value", 
-        NodeID = "name", 
-        NodeGroup = "group", 
-        fontSize = 12, 
-        nodeWidth = 25
-      )
+  output$parallelPlot <- renderPlot({
+    para_plot(input$picker, input$color)
   })
   
   # ------------------------------------------------------------------------------
