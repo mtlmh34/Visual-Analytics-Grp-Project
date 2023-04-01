@@ -1,14 +1,11 @@
 name: hotel_viz
-title: hotel_viz
+title:
 username:
 account: hotel-viz
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8445596
-bundleId: 7037174
+bundleId:
 url: https://hotel-viz.shinyapps.io/hotel_viz/
-when: 1680384616.24966
-lastSyncTime: 1680384616.24968
-asMultiple: FALSE
-asStatic: FALSE
-ignoredFiles: data/hotel_data_merged.xlsx
+when: 1680380310.05169
+lastSyncTime: 1680380310.0517
