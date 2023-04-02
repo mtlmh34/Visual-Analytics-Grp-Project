@@ -14,3 +14,4 @@ editor: visual
 The following user guide aims to provide instructions for using the HotelViz Shiny App.
 
 <iframe width="100%" height="800" src="App User Guide.pdf">
+
