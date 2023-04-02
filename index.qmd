@@ -18,6 +18,8 @@ Link to the Application: [Hotel-Viz](https://hotel-viz.shinyapps.io/hotel_viz/) 
 
 ## About Us
 
+We are a team of students from Master of IT in Business, Singapore Managment University.
+
 ![](pictures/lmh.png){fig-align="center" width="255"}
 
 <center>

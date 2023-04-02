@@ -1,4 +1,16 @@
 ---
-title: "User Guide"
-author: "Liang Minghao"
+title: "Home"
+author:
+  - Choi Sunham
+  - Christiana Lim En Hui
+  - Liang Minghao
+#date: 'Apr 02 2023'
+#date modified: '`r format(Sys.Date(), "%d. %B %Y")`'
+format: html
+editor: visual
 ---
+
+---
+The following user guide aims to provide instructions for using the HotelViz Shiny App.
+
+<iframe width="100%" height="800" src="App User Guide.pdf">
