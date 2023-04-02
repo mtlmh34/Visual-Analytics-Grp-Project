@@ -16,7 +16,6 @@ Welcome to ISSS 608 Visual Analytics and Application Group 1's project! Our proj
 
 Link to the Application: [Hotel-Viz](https://hotel-viz.shinyapps.io/hotel_viz/) (Or navigate through the directory on the top)
 
-
 ## About Us
 
 ![](pictures/lmh.png){fig-align="center" width="255"}
@@ -36,7 +35,7 @@ img {
 
 <br></br>
 
-![](pictures/lmh.png){fig-align="center" width="255"}
+![](pictures/ashley.png){fig-align="center" width="255"}
 
 <center>
 
@@ -53,7 +52,7 @@ img {
 
 <br></br>
 
-![](pictures/lmh.png){fig-align="center" width="255"}
+![](pictures/christiana.png){fig-align="center" width="255"}
 
 <center>
 

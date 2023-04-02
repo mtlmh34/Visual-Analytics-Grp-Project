@@ -293,17 +293,19 @@ ui <- navbarPage(
      mainPanel(
        h2("HotelViz - The Hotel Data Analytical Application"),
        hr(),
-       '- The Hotel Data Analytical Application aims to provide visualizations for data analytics, leading to better decision-making. ', 
-       br(),
-       tags$a(href="https://github.com/mtlmh34/Visual-Analytics-Grp-Project/blob/main/", 
-              "- Github Repository"),
+       '- This app provides insights to Hotel operations using Hotel Booking Demand data extracted from the Property Management System (PMS) of two hotels based in Portugal.',br(),
+       '- Data featured here comprehend bookings between 1st of July 2015 to 31st August 2017. ',br(),
+       '- The app aims to help equip the Operations Teams of Hotel to understand guests better and make informative decisions that can enable smoother running of Hotel Operations. ',br(),
+       '- Both descriptive analytics and predictive analytics are applied in this app to understand trends and patterns of the data as well as predict booking cancellations.', br(),
+       
        br(),br(),
        
        h3('About The Application'),hr(),
        fluidRow(
          column(4, HTML(paste("<center> <b>", 'Know Your Customers', "</b></center> ")),
                 br(),
-                ' - Data visualizations about customer\'s activities, demographic informations, etc. '),
+                ' - Data visualizations about customer\'s activities, demographic informations, etc.'
+                ), 
          column(4, HTML(paste("<center> <b>", 'Know Your Business', "</b></center> ")),
                 br(),
                 '- Data visualizations about key metrics related to the hotel\'s performance, such as average booking price and cancellation rate. '),
@@ -316,11 +318,15 @@ ui <- navbarPage(
        h3('Other Links'),hr(),
        fluidRow(
          column(5, tags$a(href="https://visual-analytics-2023jan-group1.netlify.app/", 
-                "- Project HomePage"),br(),
-         tags$a(href="https://visual-analytics-2023jan-group1.netlify.app/user_guide.html", 
-                "- User Guide"))
+                "- Project HomePage"),
+                br(),
+                tags$a(href="https://visual-analytics-2023jan-group1.netlify.app/user_guide.html", 
+                "- User Guide"),
+                br(),
+                tags$a(href="https://github.com/mtlmh34/Visual-Analytics-Grp-Project/blob/main/", 
+                       "- Github Repository"))
        ),
-       br(),br(),hr(),
+       br(),br(),
        helpText('Hope you enjoy our App!')
      )
   ),
@@ -452,7 +458,7 @@ ui <- navbarPage(
       sidebarLayout(
         sidebarPanel(
           h3("ADR Over Time"),
-          helpText("The ... plot is used to reveal the timely trend of Average Daily Rate. "),
+          helpText("The line plot generated reveals the month on month trend of the Average Daily Rate compared over the years.  "),
           br(),
           
           selectInput("hotel_type", "Select Hotel:",
