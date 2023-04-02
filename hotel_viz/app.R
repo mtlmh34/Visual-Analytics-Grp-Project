@@ -7,7 +7,7 @@
 ### --------- Getting Started ---------
 
 pacman:: p_load(ggplot2, plotly, tidyverse, shiny, gt, gtsummary, ggalluvial, gmodels,
-                DT, ggstatsplot, shinyWidgets, ggiraph, billboarder, networkD3, rpart, rpart.plot, caret)
+                DT, ggstatsplot, shinyWidgets, ggiraph, billboarder, networkD3, rpart, rpart.plot, caret, PMCMRplus)
 set.seed(123)
 
 # loading data
